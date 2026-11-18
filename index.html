@@ -670,10 +670,14 @@ async function checkLoginSession() {
 }
 
 supabaseClient.auth.onAuthStateChange((event, session) => {
-    if (event === "SIGNED_IN" && session) {
-        setTimeout(async () => {
+    if (
+        event === "SIGNED_IN" &&
+        session &&
+        window.location.search.includes("code=")
+    ) {
+        setTimeout(() => {
             document.getElementById("loginScreen").style.display = "none";
-            await loadReminders();
+            loadReminders();
         }, 0);
     }
 });
