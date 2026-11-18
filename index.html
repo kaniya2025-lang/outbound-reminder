@@ -6,135 +6,321 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OUTBOUND REMINDER</title>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --navy: #101d3b;
+    --navy-light: #1b2e55;
+    --blue: #287cf5;
+    --blue-dark: #1764d8;
+    --text: #233452;
+    --muted: #8493aa;
+    --glass: rgba(255,255,255,.70);
+    --border: rgba(255,255,255,.85);
+    --shadow: 0 12px 40px rgba(48,86,145,.10);
+}
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: Arial, sans-serif;
+    font-family: Inter, Arial, sans-serif;
 }
 
 body {
-    background: #f4f7fc;
-    color: #25334a;
+    min-height: 100vh;
+    color: var(--text);
+    background:
+        radial-gradient(circle at 85% 10%, rgba(100,170,255,.35), transparent 30%),
+        radial-gradient(circle at 10% 90%, rgba(142,193,255,.35), transparent 30%),
+        linear-gradient(135deg,#eaf3ff,#f7faff 50%,#e8f1ff);
+}
+
+button, input {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
 }
 
 .layout {
     display: flex;
     min-height: 100vh;
+    padding: 18px;
+    gap: 18px;
 }
 
+/* SIDEBAR */
+
 .sidebar {
-    width: 245px;
+    width: 255px;
     flex-shrink: 0;
-    background: #fff;
     padding: 28px 18px;
-    border-right: 1px solid #e9eef5;
+    color: white;
+    border-radius: 24px;
+    background: linear-gradient(160deg,#101d3b,#1c3768);
+    box-shadow: 0 18px 45px rgba(16,29,59,.20);
+    display: flex;
+    flex-direction: column;
 }
 
 .logo {
-    font-size: 19px;
-    font-weight: bold;
-    color: #2478e8;
-    margin-bottom: 45px;
+    font-size: 21px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    padding: 5px 12px;
+    margin-bottom: 42px;
 }
 
 .logo span {
     display: block;
-    font-size: 11px;
-    color: #8995a7;
+    font-size: 10px;
+    color: #91b9f8;
+    letter-spacing: 3px;
     margin-top: 7px;
-    letter-spacing: 2px;
 }
 
 .nav-title {
-    font-size: 11px;
-    color: #9ba6b5;
-    margin: 25px 12px 12px;
-    font-weight: bold;
-    letter-spacing: 1px;
+    color: #8098bd;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin: 20px 12px 12px;
 }
 
 .nav-item {
-    padding: 14px 13px;
-    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 14px;
+    border-radius: 12px;
     margin-bottom: 7px;
-    color: #66758a;
+    color: #c1cee2;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 13px;
+    transition: .25s ease;
+}
+
+.nav-item .nav-icon {
+    width: 22px;
+    font-size: 17px;
+    text-align: center;
+}
+
+.nav-item:hover {
+    background: rgba(255,255,255,.12);
+    color: white;
+    transform: translateX(4px);
 }
 
 .nav-item.active {
-    background: #eaf3ff;
-    color: #2478e8;
-    font-weight: bold;
+    color: white;
+    background: linear-gradient(100deg,#347ff0,#559aff);
+    box-shadow: 0 7px 20px rgba(45,124,245,.30);
 }
+
+.sidebar-bottom {
+    margin-top: auto;
+    padding-top: 25px;
+}
+
+.sidebar-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 10px;
+    border-top: 1px solid rgba(255,255,255,.12);
+    margin-top: 20px;
+}
+
+.sidebar-user img {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #dceaff;
+}
+
+.sidebar-user strong {
+    display: block;
+    font-size: 12px;
+    color: white;
+}
+
+.sidebar-user small {
+    display: block;
+    color: #9fb3d2;
+    font-size: 10px;
+    margin-top: 4px;
+}
+
+/* MAIN */
 
 .main {
     flex: 1;
-    padding: 32px;
     min-width: 0;
+    padding: 12px 12px 30px;
 }
 
 .topbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 32px;
     gap: 15px;
-}
-
-.topbar h1 {
-    font-size: 25px;
-}
-
-.topbar p {
-    color: #929eae;
-    margin-top: 7px;
-    font-size: 13px;
-}
-
-.profile {
-    background: white;
-    padding: 12px 18px;
-    border-radius: 12px;
-    font-size: 13px;
-}
-
-.stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
     margin-bottom: 28px;
 }
 
-.stat-card, .panel {
-    background: white;
+.topbar h1 {
+    font-size: 27px;
+    font-weight: 800;
+    color: #192d50;
+}
+
+.topbar p {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 8px;
+}
+
+.profile-button {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 9px 14px;
+    background: rgba(255,255,255,.70);
+    border: 1px solid white;
     border-radius: 15px;
+    box-shadow: var(--shadow);
+    transition: .25s;
+}
+
+.profile-button:hover {
+    transform: translateY(-3px);
+}
+
+.profile-button img {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.profile-button strong {
+    display: block;
+    font-size: 12px;
+    color: var(--text);
+}
+
+.profile-button small {
+    display: block;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 4px;
+}
+
+/* GLASS CARDS */
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3,minmax(0,1fr));
+    gap: 18px;
+    margin-bottom: 22px;
+}
+
+.stat-card, .panel, .profile-panel {
+    background: var(--glass);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    transition: .25s ease;
+}
+
+.stat-card {
     padding: 23px;
-    box-shadow: 0 4px 18px rgba(30, 60, 100, 0.04);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card:hover, .panel:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 45px rgba(48,86,145,.15);
+}
+
+.stat-card::after {
+    content: "";
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: rgba(70,145,255,.08);
+    right: -30px;
+    top: -35px;
+}
+
+.stat-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .stat-card p {
-    color: #8995a7;
-    font-size: 13px;
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.stat-icon {
+    width: 39px;
+    height: 39px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    background: #e5efff;
+    color: #347ff0;
+    font-size: 19px;
 }
 
 .stat-card h2 {
-    font-size: 29px;
-    margin-top: 14px;
-    color: #2478e8;
+    margin-top: 17px;
+    font-size: 31px;
+    color: #1b3765;
 }
+
+.stat-card small {
+    color: #8a9ab2;
+    font-size: 11px;
+}
+
+/* CONTENT */
 
 .content {
     display: grid;
-    grid-template-columns: minmax(280px, 0.9fr) minmax(320px, 1.4fr);
-    gap: 22px;
+    grid-template-columns: minmax(270px,.85fr) minmax(320px,1.35fr);
+    gap: 20px;
+    align-items: start;
+}
+
+.panel {
+    padding: 24px;
 }
 
 .panel h3 {
-    font-size: 17px;
+    font-size: 16px;
+    color: #1c3154;
     margin-bottom: 22px;
+}
+
+.panel-subtitle {
+    color: var(--muted);
+    font-size: 11px;
+    margin-top: -15px;
+    margin-bottom: 20px;
 }
 
 .form-group {
@@ -143,47 +329,60 @@ body {
 
 .form-group label {
     display: block;
-    font-size: 13px;
-    font-weight: bold;
+    font-size: 12px;
+    font-weight: 700;
     margin-bottom: 9px;
+    color: #405575;
 }
 
 .form-group input {
     width: 100%;
     padding: 13px;
-    border: 1px solid #e2e8f0;
-    border-radius: 9px;
+    border: 1px solid rgba(160,185,220,.45);
+    background: rgba(255,255,255,.72);
+    border-radius: 11px;
     outline: none;
-    font-size: 14px;
+    font-size: 13px;
+    color: var(--text);
+    transition: .2s;
 }
 
 .form-group input:focus {
-    border-color: #2478e8;
+    border-color: #4d91f5;
+    box-shadow: 0 0 0 3px rgba(77,145,245,.12);
 }
 
-.add-btn {
+.primary-btn {
     width: 100%;
     padding: 14px;
-    border: none;
-    background: #2478e8;
     color: white;
-    border-radius: 9px;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
+    border: none;
+    border-radius: 11px;
+    background: linear-gradient(110deg,#287cf5,#579cff);
+    box-shadow: 0 7px 18px rgba(40,124,245,.23);
+    font-size: 13px;
+    font-weight: 700;
+    transition: .25s;
 }
 
-.add-btn:hover {
-    background: #1765cc;
+.primary-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(40,124,245,.32);
+}
+
+.primary-btn:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+    transform: none;
 }
 
 .reminder {
-    padding: 16px 0;
-    border-bottom: 1px solid #edf0f5;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     gap: 12px;
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(150,175,210,.22);
 }
 
 .reminder:last-child {
@@ -191,135 +390,244 @@ body {
 }
 
 .reminder strong {
-    font-size: 14px;
+    font-size: 13px;
+    color: #243a5c;
 }
 
 .reminder p {
-    color: #8995a7;
-    font-size: 12px;
-    margin-top: 7px;
+    color: #8796ab;
+    font-size: 11px;
+    margin-top: 6px;
 }
 
 .complete-btn {
-    background: #e9f8ef;
+    background: #e5f8ee;
     color: #219653;
-    border: none;
-    border-radius: 7px;
+    border: 1px solid #c7eed8;
+    border-radius: 9px;
     padding: 9px 12px;
-    cursor: pointer;
+    font-size: 11px;
+    font-weight: 700;
     white-space: nowrap;
 }
 
-.empty {
-    color: #9ba6b5;
-    font-size: 13px;
-    padding: 15px 0;
+.complete-btn:hover {
+    background: #d4f3e2;
 }
+
+.empty {
+    color: #91a0b4;
+    font-size: 12px;
+    padding: 18px 0;
+    text-align: center;
+}
+
+/* PROFILE PANEL */
+
+.profile-panel {
+    padding: 25px;
+    margin-bottom: 22px;
+    display: none;
+}
+
+.profile-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 22px;
+}
+
+.profile-heading h3 {
+    font-size: 17px;
+}
+
+.profile-details {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.profile-large-photo {
+    width: 85px;
+    height: 85px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid white;
+    box-shadow: 0 5px 20px rgba(50,100,170,.15);
+    background: #e5efff;
+}
+
+.profile-info h2 {
+    font-size: 19px;
+    color: #20375c;
+}
+
+.profile-info p {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 7px;
+}
+
+.role-badge {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 6px 11px;
+    background: #e5efff;
+    color: #287cf5;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 22px;
+}
+
+.secondary-btn, .signout-btn {
+    border: 1px solid #dce7f5;
+    background: white;
+    padding: 11px 16px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.secondary-btn {
+    color: #287cf5;
+}
+
+.signout-btn {
+    color: #d95353;
+}
+
+.profile-edit {
+    display: none;
+    margin-top: 20px;
+    max-width: 420px;
+}
+
+/* LOGIN */
 
 .login-screen {
     position: fixed;
     inset: 0;
-    background: linear-gradient(135deg, #eaf3ff, #f7faff);
+    z-index: 1000;
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
     padding: 20px;
+    background:
+        radial-gradient(circle at 20% 20%,rgba(100,170,255,.30),transparent 35%),
+        linear-gradient(135deg,#eaf3ff,#f8fbff);
 }
 
 .login-card {
-    background: white;
     width: 100%;
     max-width: 420px;
-    padding: 42px 35px;
-    border-radius: 20px;
-    box-shadow: 0 15px 50px rgba(30, 80, 150, 0.12);
+    padding: 40px 34px;
+    background: rgba(255,255,255,.78);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+    border: 1px solid white;
+    border-radius: 23px;
+    box-shadow: 0 20px 60px rgba(35,75,140,.15);
 }
 
 .login-logo {
-    color: #2478e8;
-    font-size: 25px;
-    font-weight: bold;
     text-align: center;
+    color: #287cf5;
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: 1px;
 }
 
 .login-subtitle {
     text-align: center;
     font-size: 10px;
+    color: #94a4ba;
     letter-spacing: 3px;
-    color: #929eae;
-    margin-top: 7px;
-    margin-bottom: 35px;
+    margin: 8px 0 34px;
 }
 
 .login-card h2 {
-    font-size: 25px;
     text-align: center;
-    margin-bottom: 8px;
+    font-size: 24px;
+    color: #20375c;
 }
 
 .login-description {
-    color: #8995a7;
     text-align: center;
-    font-size: 13px;
-    margin-bottom: 28px;
+    color: #8999af;
+    font-size: 12px;
+    margin: 9px 0 26px;
 }
 
 .login-card label {
     display: block;
-    font-size: 13px;
-    font-weight: bold;
-    margin-bottom: 9px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 8px;
 }
 
 .login-card input {
     width: 100%;
     padding: 14px;
-    border: 1px solid #e2e8f0;
-    border-radius: 9px;
-    margin-bottom: 20px;
+    border: 1px solid #dce7f5;
+    background: rgba(255,255,255,.85);
+    border-radius: 10px;
+    margin-bottom: 18px;
     outline: none;
+    font-size: 13px;
+}
+
+.login-card input:focus {
+    border-color: #4d91f5;
 }
 
 .login-card button {
     width: 100%;
-    padding: 15px;
-    background: #2478e8;
+    padding: 14px;
+    background: linear-gradient(110deg,#287cf5,#579cff);
     color: white;
     border: none;
-    border-radius: 9px;
-    font-size: 15px;
-    font-weight: bold;
-    cursor: pointer;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
 }
 
 .login-card button:disabled {
-    opacity: 0.6;
+    opacity: .6;
     cursor: not-allowed;
 }
 
 #googleLoginBtn {
-    margin-bottom: 14px;
+    margin-bottom: 13px;
     background: white;
-    color: #2878e8;
-    border: 1px solid #2878e8;
+    color: #287cf5;
+    border: 1px solid #287cf5;
 }
 
 #googleLoginBtn:hover {
-    background: #f0f6ff;
+    background: #edf5ff;
 }
 
 #loginMessage {
     text-align: center;
     margin-top: 15px;
-    font-size: 13px;
-    color: #e04b4b;
+    font-size: 12px;
+    color: #d95353;
     overflow-wrap: anywhere;
 }
 
-@media(max-width: 850px) {
+/* RESPONSIVE */
+
+@media(max-width:1000px) {
     .sidebar {
-        width: 190px;
+        width: 220px;
     }
 
     .content {
@@ -327,58 +635,128 @@ body {
     }
 }
 
-@media(max-width: 600px) {
+@media(max-width:700px) {
+    .layout {
+        padding: 10px;
+        gap: 10px;
+    }
+
     .sidebar {
+        width: 65px;
+        padding: 20px 8px;
+        border-radius: 17px;
+    }
+
+    .logo {
+        font-size: 0;
+        text-align: center;
+        padding: 5px 0;
+        margin-bottom: 30px;
+    }
+
+    .logo::before {
+        content: "O";
+        font-size: 23px;
+    }
+
+    .logo span, .nav-title, .nav-item span.nav-label,
+    .sidebar-user div {
         display: none;
     }
 
+    .nav-item {
+        justify-content: center;
+        padding: 13px 5px;
+    }
+
+    .nav-item .nav-icon {
+        font-size: 20px;
+    }
+
+    .sidebar-user {
+        justify-content: center;
+        padding: 10px 0;
+    }
+
+    .sidebar-user img {
+        width: 35px;
+        height: 35px;
+    }
+
     .main {
-        padding: 18px;
+        padding: 8px 4px 20px;
+    }
+
+    .topbar h1 {
+        font-size: 21px;
+    }
+
+    .topbar p {
+        font-size: 11px;
+    }
+
+    .profile-button {
+        padding: 7px;
+    }
+
+    .profile-button div {
+        display: none;
+    }
+
+    .profile-button img {
+        width: 36px;
+        height: 36px;
     }
 
     .stats {
         grid-template-columns: 1fr;
+        gap: 12px;
     }
 
-    .topbar h1 {
-        font-size: 20px;
+    .stat-card {
+        padding: 18px;
     }
 
-    .login-card {
-        padding: 32px 22px;
+    .stat-card h2 {
+        font-size: 26px;
+    }
+
+    .panel {
+        padding: 18px;
+    }
+
+    .profile-panel {
+        padding: 18px;
     }
 }
+
 </style>
 </head>
 
 <body>
 
+<!-- LOGIN SCREEN -->
+
 <div id="loginScreen" class="login-screen">
     <div class="login-card">
+
         <div class="login-logo">OUTBOUND</div>
         <p class="login-subtitle">REMINDER SYSTEM</p>
 
         <h2>Welcome Back!</h2>
-        <p class="login-description">Sign in to your account</p>
+        <p class="login-description">Sign in to your department account</p>
 
         <form id="loginForm" autocomplete="on">
+
             <label>Email Address</label>
-            <input
-                type="email"
-                id="loginEmail"
-                name="username"
-                autocomplete="username"
-                placeholder="Enter your email"
-                required>
+            <input type="email" id="loginEmail"
+                name="username" autocomplete="username"
+                placeholder="Enter your email" required>
 
             <label>Password</label>
-            <input
-                type="password"
-                id="loginPassword"
-                name="password"
-                autocomplete="current-password"
-                placeholder="Enter your password"
-                required>
+            <input type="password" id="loginPassword"
+                name="password" autocomplete="current-password"
+                placeholder="Enter your password" required>
 
             <button type="button" id="googleLoginBtn">
                 Continue with Google
@@ -389,118 +767,219 @@ body {
             </button>
 
             <p id="loginMessage"></p>
+
         </form>
     </div>
 </div>
 
-<div class="layout">
+
+<!-- MAIN APP -->
+
+<div class="layout" id="appLayout">
 
     <aside class="sidebar">
+
         <div class="logo">
             OUTBOUND
             <span>REMINDER SYSTEM</span>
         </div>
 
-        <div class="nav-title">MENU</div>
-        <div class="nav-item active">▦ &nbsp; Dashboard</div>
-        <div class="nav-item">＋ &nbsp; Add Reminder</div>
-        <div class="nav-item">◷ &nbsp; My Reminders</div>
-        <div class="nav-item">✓ &nbsp; Call Log</div>
+        <div class="nav-title">WORKSPACE</div>
+
+        <div class="nav-item active" id="dashboardNav">
+            <span class="nav-icon">▦</span>
+            <span class="nav-label">Dashboard</span>
+        </div>
+
+        <div class="nav-item" id="addNav">
+            <span class="nav-icon">＋</span>
+            <span class="nav-label">Add Reminder</span>
+        </div>
+
+        <div class="nav-item" id="remindersNav">
+            <span class="nav-icon">◷</span>
+            <span class="nav-label">My Reminders</span>
+        </div>
 
         <div class="nav-title">ACCOUNT</div>
-        <div class="nav-item">⚙ &nbsp; Settings</div>
-        <div class="nav-item">ⓘ &nbsp; About</div>
+
+        <div class="nav-item" id="profileNav">
+            <span class="nav-icon">◎</span>
+            <span class="nav-label">My Profile</span>
+        </div>
+
+        <div class="sidebar-bottom">
+            <div class="sidebar-user">
+                <img id="sidebarPhoto" alt="Profile photo">
+                <div>
+                    <strong id="sidebarName">Agent</strong>
+                    <small id="sidebarRole">Department Member</small>
+                </div>
+            </div>
+        </div>
+
     </aside>
+
 
     <main class="main">
 
         <header class="topbar">
             <div>
-                <h1>Dashboard</h1>
-                <p>Welcome back! Manage your outbound calls.</p>
+                <h1 id="pageTitle">Dashboard</h1>
+                <p id="pageSubtitle">Welcome back! Manage your outbound calls.</p>
             </div>
-            <div class="profile">👤 &nbsp; Agent Account</div>
+
+            <button class="profile-button" id="topProfileBtn">
+                <img id="topPhoto" alt="Profile photo">
+                <div>
+                    <strong id="topName">Agent Account</strong>
+                    <small id="topRole">Department Member</small>
+                </div>
+            </button>
         </header>
 
-        <section class="stats">
-            <div class="stat-card">
-                <p>Total Reminders</p>
-                <h2 id="totalCount">0</h2>
+
+        <!-- PROFILE -->
+
+        <section class="profile-panel" id="profilePanel">
+
+            <div class="profile-heading">
+                <h3>My Profile</h3>
             </div>
 
-            <div class="stat-card">
-                <p>Today's Reminders</p>
-                <h2 id="todayCount">0</h2>
-            </div>
+            <div class="profile-details">
+                <img id="profilePhoto" class="profile-large-photo"
+                    alt="Profile photo">
 
-            <div class="stat-card">
-                <p>Upcoming Reminders</p>
-                <h2 id="upcomingCount">0</h2>
-            </div>
-        </section>
-
-        <section class="content">
-
-            <div class="panel">
-                <h3>＋ Add New Reminder</h3>
-
-                <form id="reminderForm">
-
-                    <div class="form-group">
-                        <label>Customer Name</label>
-                        <input
-                            type="text"
-                            id="customerName"
-                            placeholder="Enter customer name"
-                            required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Phone Number</label>
-                        <input
-                            type="tel"
-                            id="phoneNumber"
-                            placeholder="Enter phone number"
-                            required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Reminder Date</label>
-                        <input
-                            type="date"
-                            id="reminderDate"
-                            required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Reminder Time</label>
-                        <input
-                            type="time"
-                            id="reminderTime"
-                            required>
-                    </div>
-
-                    <button class="add-btn" type="submit" id="addReminderBtn">
-                        + Create Reminder
-                    </button>
-
-                </form>
-            </div>
-
-            <div class="panel">
-                <h3>◷ Upcoming Reminders</h3>
-
-                <div id="reminderList">
-                    <div class="empty">No reminders yet.</div>
+                <div class="profile-info">
+                    <h2 id="profileName">User Name</h2>
+                    <p id="profileEmail">user@email.com</p>
+                    <span class="role-badge" id="profileRole">Agent</span>
                 </div>
             </div>
+
+            <div class="profile-actions">
+                <button class="secondary-btn" id="editProfileBtn">
+                    Edit Profile
+                </button>
+
+                <button class="signout-btn" id="signOutBtn">
+                    Sign Out
+                </button>
+            </div>
+
+            <div class="profile-edit" id="profileEdit">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="editFullName"
+                        placeholder="Enter your name">
+                </div>
+
+                <button class="primary-btn" id="saveProfileBtn">
+                    Save Changes
+                </button>
+            </div>
+
+            <p id="profileMessage" style="font-size:12px;margin-top:14px;color:#287cf5;"></p>
+
+        </section>
+
+
+        <!-- DASHBOARD -->
+
+        <section id="dashboardSection">
+
+            <section class="stats">
+
+                <div class="stat-card">
+                    <div class="stat-top">
+                        <p>Total Reminders</p>
+                        <div class="stat-icon">▦</div>
+                    </div>
+                    <h2 id="totalCount">0</h2>
+                    <small>All active reminders</small>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-top">
+                        <p>Today's Reminders</p>
+                        <div class="stat-icon">◷</div>
+                    </div>
+                    <h2 id="todayCount">0</h2>
+                    <small>Scheduled for today</small>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-top">
+                        <p>Upcoming Reminders</p>
+                        <div class="stat-icon">↗</div>
+                    </div>
+                    <h2 id="upcomingCount">0</h2>
+                    <small>Today and future reminders</small>
+                </div>
+
+            </section>
+
+
+            <section class="content">
+
+                <div class="panel" id="addReminderPanel">
+
+                    <h3>＋ Create New Reminder</h3>
+                    <p class="panel-subtitle">Schedule your next customer call</p>
+
+                    <form id="reminderForm">
+
+                        <div class="form-group">
+                            <label>Customer Name</label>
+                            <input type="text" id="customerName"
+                                placeholder="Enter customer name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="tel" id="phoneNumber"
+                                placeholder="Enter phone number" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Reminder Date</label>
+                            <input type="date" id="reminderDate" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Reminder Time</label>
+                            <input type="time" id="reminderTime" required>
+                        </div>
+
+                        <button class="primary-btn" type="submit"
+                            id="addReminderBtn">
+                            + Create Reminder
+                        </button>
+
+                    </form>
+                </div>
+
+
+                <div class="panel" id="reminderPanel">
+
+                    <h3>◷ Upcoming Reminders</h3>
+                    <p class="panel-subtitle">Your scheduled customer callbacks</p>
+
+                    <div id="reminderList">
+                        <div class="empty">No reminders yet.</div>
+                    </div>
+
+                </div>
+
+            </section>
 
         </section>
 
     </main>
+
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
 /* ==================================
@@ -511,10 +990,9 @@ const SUPABASE_URL =
     "https://xitfyrauejgmzluyrhna.supabase.co";
 
 /*
-   Replace the value below with your EXISTING
-   sb_publishable_ key from your old index.html.
-
-   Never put an sb_secret_ key here.
+  IMPORTANT:
+  Replace this with your existing sb_publishable_ key.
+  Never use an sb_secret_ key in frontend code.
 */
 
 const SUPABASE_KEY =
@@ -534,6 +1012,9 @@ const supabaseClient = window.supabase.createClient(
 );
 
 let reminders = [];
+let currentUser = null;
+let currentProfile = null;
+
 let isOAuthCallback =
     new URLSearchParams(window.location.search).has("code");
 
@@ -541,25 +1022,69 @@ let oauthHandled = false;
 
 
 /* ==================================
-   HELPER FUNCTIONS
+   ELEMENT HELPERS
 ================================== */
 
+function element(id) {
+    return document.getElementById(id);
+}
+
 function showLoginMessage(message) {
-    document.getElementById("loginMessage").textContent = message;
+    element("loginMessage").textContent = message;
 }
 
 function showDashboard() {
-    document.getElementById("loginScreen").style.display = "none";
+    element("loginScreen").style.display = "none";
+    element("appLayout").style.display = "flex";
+}
+
+function showLogin() {
+    element("loginScreen").style.display = "flex";
+    element("appLayout").style.display = "none";
 }
 
 function getTodayDate() {
     const now = new Date();
 
     const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const day = String(now.getDate()).padStart(2, "0");
+    const month = String(now.getMonth() + 1).padStart(2,"0");
+    const day = String(now.getDate()).padStart(2,"0");
 
     return `${year}-${month}-${day}`;
+}
+
+function getInitials(name) {
+    return (name || "U")
+        .trim()
+        .split(/\s+/)
+        .slice(0,2)
+        .map(function(part) {
+            return part.charAt(0).toUpperCase();
+        })
+        .join("") || "U";
+}
+
+function avatarPlaceholder(name) {
+    const initials = getInitials(name);
+    const svg =
+        '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120">' +
+        '<rect width="100%" height="100%" rx="60" fill="#dceaff"/>' +
+        '<text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle" ' +
+        'font-family="Arial" font-size="42" font-weight="bold" fill="#287cf5">' +
+        initials + '</text></svg>';
+
+    return "data:image/svg+xml;charset=UTF-8," +
+        encodeURIComponent(svg);
+}
+
+function setPhoto(imageId, photoUrl, name) {
+    const img = element(imageId);
+
+    img.src = photoUrl || avatarPlaceholder(name);
+
+    img.onerror = function() {
+        img.src = avatarPlaceholder(name);
+    };
 }
 
 
@@ -567,17 +1092,17 @@ function getTodayDate() {
    GOOGLE LOGIN
 ================================== */
 
-const googleLoginBtn =
-    document.getElementById("googleLoginBtn");
+element("googleLoginBtn").addEventListener("click", async function() {
 
-googleLoginBtn.addEventListener("click", async function() {
+    const button = element("googleLoginBtn");
 
-    googleLoginBtn.disabled = true;
-    googleLoginBtn.textContent = "Connecting to Google...";
+    button.disabled = true;
+    button.textContent = "Connecting to Google...";
 
     showLoginMessage("");
 
     try {
+
         const { error } =
             await supabaseClient.auth.signInWithOAuth({
                 provider: "google",
@@ -586,42 +1111,33 @@ googleLoginBtn.addEventListener("click", async function() {
                 }
             });
 
-        if (error) {
-            throw error;
-        }
+        if (error) throw error;
 
     } catch (error) {
 
         showLoginMessage(error.message);
 
-        googleLoginBtn.disabled = false;
-        googleLoginBtn.textContent = "Continue with Google";
+        button.disabled = false;
+        button.textContent = "Continue with Google";
     }
 });
 
 
 /* ==================================
-   EMAIL AND PASSWORD LOGIN
+   EMAIL LOGIN
 ================================== */
 
-const loginForm =
-    document.getElementById("loginForm");
-
-loginForm.addEventListener("submit", async function(event) {
+element("loginForm").addEventListener("submit", async function(event) {
 
     event.preventDefault();
 
-    const email =
-        document.getElementById("loginEmail").value.trim();
+    const email = element("loginEmail").value.trim();
+    const password = element("loginPassword").value;
 
-    const password =
-        document.getElementById("loginPassword").value;
+    const button = element("signInBtn");
 
-    const signInBtn =
-        document.getElementById("signInBtn");
-
-    signInBtn.disabled = true;
-    signInBtn.textContent = "Signing in...";
+    button.disabled = true;
+    button.textContent = "Signing in...";
 
     showLoginMessage("");
 
@@ -633,9 +1149,15 @@ loginForm.addEventListener("submit", async function(event) {
                 password: password
             });
 
-        if (error) {
-            throw error;
+        if (error) throw error;
+
+        const { data } = await supabaseClient.auth.getUser();
+
+        if (!data.user) {
+            throw new Error("Could not identify signed-in user.");
         }
+
+        currentUser = data.user;
 
         showDashboard();
         await loadReminders();
@@ -646,77 +1168,282 @@ loginForm.addEventListener("submit", async function(event) {
 
     } finally {
 
-        signInBtn.disabled = false;
-        signInBtn.textContent = "Sign In";
+        button.disabled = false;
+        button.textContent = "Sign In";
     }
 });
 
 
 /* ==================================
-   AUTHENTICATION STATE LISTENER
+   AUTH STATE LISTENER
 ================================== */
 
-/*
-   IMPORTANT:
-   Do not use async/await for Supabase requests
-   directly inside this callback.
+supabaseClient.auth.onAuthStateChange(function(event, session) {
 
-   The setTimeout lets the authentication callback
-   finish before loadReminders makes another request.
-*/
+    if (
+        isOAuthCallback &&
+        !oauthHandled &&
+        session &&
+        (event === "SIGNED_IN" || event === "INITIAL_SESSION")
+    ) {
 
-supabaseClient.auth.onAuthStateChange(
-    function(event, session) {
+        oauthHandled = true;
+        isOAuthCallback = false;
 
-        if (
-            isOAuthCallback &&
-            !oauthHandled &&
-            session &&
-            (event === "SIGNED_IN" || event === "INITIAL_SESSION")
-        ) {
+        setTimeout(async function() {
 
-            oauthHandled = true;
-            isOAuthCallback = false;
+            try {
 
-            setTimeout(function() {
+                currentUser = session.user;
 
                 showDashboard();
+                await loadReminders();
 
-                loadReminders().catch(function(error) {
-                    console.error(
-                        "Dashboard loading error:",
-                        error
-                    );
-                });
+            } catch (error) {
 
-                window.history.replaceState(
-                    {},
-                    document.title,
-                    window.location.pathname
-                );
+                console.error("Dashboard loading error:", error);
+                alert("Dashboard error: " + error.message);
 
-            }, 0);
-        }
+            }
+
+            window.history.replaceState(
+                {},
+                document.title,
+                window.location.pathname
+            );
+
+        }, 0);
     }
-);
+});
+
+
+/* ==================================
+   PROFILE
+================================== */
+
+async function loadProfile(user) {
+
+    currentUser = user;
+
+    const { data: profile, error } = await supabaseClient
+        .from("profiles")
+        .select("full_name, role")
+        .eq("id", user.id)
+        .single();
+
+    if (error) {
+        throw new Error("Could not load profile: " + error.message);
+    }
+
+    currentProfile = profile;
+
+    const metadata = user.user_metadata || {};
+
+    const name =
+        profile.full_name ||
+        metadata.full_name ||
+        metadata.name ||
+        user.email ||
+        "Department Member";
+
+    const photo =
+        metadata.avatar_url ||
+        metadata.picture ||
+        "";
+
+    const role = profile.role || "agent";
+
+    element("topName").textContent = name;
+    element("topRole").textContent = role;
+
+    element("sidebarName").textContent = name;
+    element("sidebarRole").textContent = role;
+
+    element("profileName").textContent = name;
+    element("profileEmail").textContent = user.email || "";
+    element("profileRole").textContent = role;
+
+    element("editFullName").value = name;
+
+    setPhoto("topPhoto", photo, name);
+    setPhoto("sidebarPhoto", photo, name);
+    setPhoto("profilePhoto", photo, name);
+}
+
+
+/* ==================================
+   EDIT PROFILE
+================================== */
+
+element("editProfileBtn").addEventListener("click", function() {
+
+    const editBox = element("profileEdit");
+
+    editBox.style.display =
+        editBox.style.display === "block" ? "none" : "block";
+
+    element("profileMessage").textContent = "";
+});
+
+element("saveProfileBtn").addEventListener("click", async function() {
+
+    const button = element("saveProfileBtn");
+    const fullName = element("editFullName").value.trim();
+
+    if (!fullName) {
+        element("profileMessage").textContent =
+            "Please enter your name.";
+        return;
+    }
+
+    button.disabled = true;
+    button.textContent = "Saving...";
+
+    try {
+
+        const { error } = await supabaseClient
+            .from("profiles")
+            .update({ full_name: fullName })
+            .eq("id", currentUser.id);
+
+        if (error) throw error;
+
+        await loadProfile(currentUser);
+
+        element("profileEdit").style.display = "none";
+        element("profileMessage").textContent =
+            "Profile updated successfully.";
+
+    } catch (error) {
+
+        element("profileMessage").textContent =
+            "Could not update profile: " + error.message;
+
+    } finally {
+
+        button.disabled = false;
+        button.textContent = "Save Changes";
+    }
+});
+
+
+/* ==================================
+   SIGN OUT
+================================== */
+
+element("signOutBtn").addEventListener("click", async function() {
+
+    if (!confirm("Are you sure you want to sign out?")) {
+        return;
+    }
+
+    const { error } = await supabaseClient.auth.signOut();
+
+    if (error) {
+        alert("Sign out failed: " + error.message);
+        return;
+    }
+
+    currentUser = null;
+    currentProfile = null;
+    reminders = [];
+
+    showLogin();
+});
+
+
+/* ==================================
+   NAVIGATION
+================================== */
+
+function setActiveNav(activeId) {
+
+    document.querySelectorAll(".nav-item").forEach(function(item) {
+        item.classList.remove("active");
+    });
+
+    element(activeId).classList.add("active");
+}
+
+function showPage(page) {
+
+    element("profilePanel").style.display =
+        page === "profile" ? "block" : "none";
+
+    element("dashboardSection").style.display =
+        page === "profile" ? "none" : "block";
+
+    if (page === "profile") {
+
+        element("pageTitle").textContent = "My Profile";
+        element("pageSubtitle").textContent =
+            "Manage your department account.";
+
+        setActiveNav("profileNav");
+
+    } else {
+
+        element("pageTitle").textContent =
+            page === "reminders" ? "My Reminders" : "Dashboard";
+
+        element("pageSubtitle").textContent =
+            page === "reminders"
+            ? "View your scheduled customer callbacks."
+            : "Welcome back! Manage your outbound calls.";
+
+        setActiveNav(
+            page === "reminders" ? "remindersNav" : "dashboardNav"
+        );
+    }
+
+    if (page === "add") {
+        element("addReminderPanel").scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+    }
+
+    if (page === "reminders") {
+        element("reminderPanel").scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+    }
+}
+
+element("dashboardNav").addEventListener("click", function() {
+    showPage("dashboard");
+});
+
+element("addNav").addEventListener("click", function() {
+    showPage("add");
+});
+
+element("remindersNav").addEventListener("click", function() {
+    showPage("reminders");
+});
+
+element("profileNav").addEventListener("click", function() {
+    showPage("profile");
+});
+
+element("topProfileBtn").addEventListener("click", function() {
+    showPage("profile");
+});
 
 
 /* ==================================
    ADD REMINDER
 ================================== */
 
-const reminderForm =
-    document.getElementById("reminderForm");
-
-reminderForm.addEventListener("submit", async function(event) {
+element("reminderForm").addEventListener("submit", async function(event) {
 
     event.preventDefault();
 
-    const addButton =
-        document.getElementById("addReminderBtn");
+    const button = element("addReminderBtn");
 
-    addButton.disabled = true;
-    addButton.textContent = "Saving...";
+    button.disabled = true;
+    button.textContent = "Saving...";
 
     try {
 
@@ -731,14 +1458,10 @@ reminderForm.addEventListener("submit", async function(event) {
 
         const reminderData = {
             user_id: user.id,
-            customer_name:
-                document.getElementById("customerName").value.trim(),
-            phone_number:
-                document.getElementById("phoneNumber").value.trim(),
-            reminder_date:
-                document.getElementById("reminderDate").value,
-            reminder_time:
-                document.getElementById("reminderTime").value
+            customer_name: element("customerName").value.trim(),
+            phone_number: element("phoneNumber").value.trim(),
+            reminder_date: element("reminderDate").value,
+            reminder_time: element("reminderTime").value
         };
 
         const { data, error } = await supabaseClient
@@ -747,9 +1470,7 @@ reminderForm.addEventListener("submit", async function(event) {
             .select()
             .single();
 
-        if (error) {
-            throw error;
-        }
+        if (error) throw error;
 
         reminders.push({
             id: data.id,
@@ -759,8 +1480,11 @@ reminderForm.addEventListener("submit", async function(event) {
             time: data.reminder_time
         });
 
-        reminderForm.reset();
+        element("reminderForm").reset();
+
         renderReminders();
+
+        alert("Reminder created successfully!");
 
     } catch (error) {
 
@@ -768,8 +1492,8 @@ reminderForm.addEventListener("submit", async function(event) {
 
     } finally {
 
-        addButton.disabled = false;
-        addButton.textContent = "+ Create Reminder";
+        button.disabled = false;
+        button.textContent = "+ Create Reminder";
     }
 });
 
@@ -789,20 +1513,11 @@ async function loadReminders() {
         throw new Error("Could not identify signed-in user.");
     }
 
-    const {
-        data: profile,
-        error: profileError
-    } = await supabaseClient
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single();
+    currentUser = user;
 
-    if (profileError) {
-        throw new Error(
-            "Could not load user profile: " + profileError.message
-        );
-    }
+    await loadProfile(user);
+
+    const profile = currentProfile;
 
     let query = supabaseClient
         .from("reminders")
@@ -814,15 +1529,10 @@ async function loadReminders() {
         query = query.eq("user_id", user.id);
     }
 
-    const {
-        data,
-        error
-    } = await query;
+    const { data, error } = await query;
 
     if (error) {
-        throw new Error(
-            "Could not load reminders: " + error.message
-        );
+        throw new Error("Could not load reminders: " + error.message);
     }
 
     reminders = data.map(function(r) {
@@ -845,20 +1555,17 @@ async function loadReminders() {
 
 function renderReminders() {
 
-    const list =
-        document.getElementById("reminderList");
-
+    const list = element("reminderList");
     const today = getTodayDate();
 
-    document.getElementById("totalCount").textContent =
-        reminders.length;
+    element("totalCount").textContent = reminders.length;
 
-    document.getElementById("todayCount").textContent =
+    element("todayCount").textContent =
         reminders.filter(function(r) {
             return r.date === today;
         }).length;
 
-    document.getElementById("upcomingCount").textContent =
+    element("upcomingCount").textContent =
         reminders.filter(function(r) {
             return r.date >= today;
         }).length;
@@ -907,9 +1614,7 @@ function renderReminders() {
                     .delete()
                     .eq("id", r.id);
 
-                if (error) {
-                    throw error;
-                }
+                if (error) throw error;
 
                 reminders = reminders.filter(function(x) {
                     return x.id !== r.id;
@@ -919,9 +1624,7 @@ function renderReminders() {
 
             } catch (error) {
 
-                alert(
-                    "Could not complete reminder: " + error.message
-                );
+                alert("Could not complete reminder: " + error.message);
 
                 button.disabled = false;
                 button.textContent = "Complete";
