@@ -26,7 +26,8 @@ body {
 
 .sidebar {
     width: 245px;
-    background: #ffffff;
+    flex-shrink: 0;
+    background: #fff;
     padding: 28px 18px;
     border-right: 1px solid #e9eef5;
 }
@@ -215,18 +216,6 @@ body {
     padding: 15px 0;
 }
 
-@media(max-width: 850px) {
-    .sidebar { width: 190px; }
-    .content { grid-template-columns: 1fr; }
-}
-
-@media(max-width: 600px) {
-    .sidebar { display: none; }
-    .main { padding: 18px; }
-    .stats { grid-template-columns: 1fr; }
-    .topbar h1 { font-size: 20px; }
-}
-
 .login-screen {
     position: fixed;
     inset: 0;
@@ -304,11 +293,9 @@ body {
     cursor: pointer;
 }
 
-#loginMessage {
-    text-align: center;
-    margin-top: 15px;
-    font-size: 13px;
-    color: #e04b4b;
+.login-card button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 #googleLoginBtn {
@@ -322,15 +309,49 @@ body {
     background: #f0f6ff;
 }
 
-#loginForm button[type="submit"] {
-    margin-top: 0;
+#loginMessage {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 13px;
+    color: #e04b4b;
+    overflow-wrap: anywhere;
 }
 
+@media(max-width: 850px) {
+    .sidebar {
+        width: 190px;
+    }
+
+    .content {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media(max-width: 600px) {
+    .sidebar {
+        display: none;
+    }
+
+    .main {
+        padding: 18px;
+    }
+
+    .stats {
+        grid-template-columns: 1fr;
+    }
+
+    .topbar h1 {
+        font-size: 20px;
+    }
+
+    .login-card {
+        padding: 32px 22px;
+    }
+}
 </style>
 </head>
 
 <body>
-
 
 <div id="loginScreen" class="login-screen">
     <div class="login-card">
@@ -341,33 +362,36 @@ body {
         <p class="login-description">Sign in to your account</p>
 
         <form id="loginForm" autocomplete="on">
-    <label>Email Address</label>
-    <input
-        type="email"
-        id="loginEmail"
-        name="username"
-        autocomplete="username"
-        placeholder="Enter your email"
-        required>
+            <label>Email Address</label>
+            <input
+                type="email"
+                id="loginEmail"
+                name="username"
+                autocomplete="username"
+                placeholder="Enter your email"
+                required>
 
-    <label>Password</label>
-    <input
-        type="password"
-        id="loginPassword"
-        name="password"
-        autocomplete="current-password"
-        placeholder="Enter your password"
-        required>
+            <label>Password</label>
+            <input
+                type="password"
+                id="loginPassword"
+                name="password"
+                autocomplete="current-password"
+                placeholder="Enter your password"
+                required>
 
-<button type="button" id="googleLoginBtn">
-    Continue with Google
-</button>
-    <button type="submit">Sign In</button>
-    <p id="loginMessage"></p>
-</form>
+            <button type="button" id="googleLoginBtn">
+                Continue with Google
+            </button>
+
+            <button type="submit" id="signInBtn">
+                Sign In
+            </button>
+
+            <p id="loginMessage"></p>
+        </form>
     </div>
 </div>
-
 
 <div class="layout">
 
@@ -403,10 +427,12 @@ body {
                 <p>Total Reminders</p>
                 <h2 id="totalCount">0</h2>
             </div>
+
             <div class="stat-card">
                 <p>Today's Reminders</p>
                 <h2 id="todayCount">0</h2>
             </div>
+
             <div class="stat-card">
                 <p>Upcoming Reminders</p>
                 <h2 id="upcomingCount">0</h2>
@@ -422,27 +448,39 @@ body {
 
                     <div class="form-group">
                         <label>Customer Name</label>
-                        <input type="text" id="customerName"
-                        placeholder="Enter customer name" required>
+                        <input
+                            type="text"
+                            id="customerName"
+                            placeholder="Enter customer name"
+                            required>
                     </div>
 
                     <div class="form-group">
                         <label>Phone Number</label>
-                        <input type="tel" id="phoneNumber"
-                        placeholder="Enter phone number" required>
+                        <input
+                            type="tel"
+                            id="phoneNumber"
+                            placeholder="Enter phone number"
+                            required>
                     </div>
 
                     <div class="form-group">
                         <label>Reminder Date</label>
-                        <input type="date" id="reminderDate" required>
+                        <input
+                            type="date"
+                            id="reminderDate"
+                            required>
                     </div>
 
                     <div class="form-group">
                         <label>Reminder Time</label>
-                        <input type="time" id="reminderTime" required>
+                        <input
+                            type="time"
+                            id="reminderTime"
+                            required>
                     </div>
 
-                    <button class="add-btn" type="submit">
+                    <button class="add-btn" type="submit" id="addReminderBtn">
                         + Create Reminder
                     </button>
 
@@ -451,6 +489,7 @@ body {
 
             <div class="panel">
                 <h3>◷ Upcoming Reminders</h3>
+
                 <div id="reminderList">
                     <div class="empty">No reminders yet.</div>
                 </div>
@@ -464,122 +503,305 @@ body {
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-const SUPABASE_URL = "https://xitfyrauejgmzluyrhna.supabase.co";
+/* ==================================
+   SUPABASE CONNECTION
+================================== */
 
-const SUPABASE_KEY = "sb_publishable_VrXtVFozj2SpYtj4sEgxCQ_kjtkIJoT";
+const SUPABASE_URL =
+    "https://xitfyrauejgmzluyrhna.supabase.co";
+
+/*
+   Replace the value below with your EXISTING
+   sb_publishable_ key from your old index.html.
+
+   Never put an sb_secret_ key here.
+*/
+
+const SUPABASE_KEY =
+    "sb_publishable_VrXtVFozj2SpYtj4sEgxCQ_kjtkIJoT";
 
 const supabaseClient = window.supabase.createClient(
     SUPABASE_URL,
-    SUPABASE_KEY
+    SUPABASE_KEY,
+    {
+        auth: {
+            flowType: "pkce",
+            autoRefreshToken: true,
+            persistSession: true,
+            detectSessionInUrl: true
+        }
+    }
 );
 
 let reminders = [];
+let isOAuthCallback =
+    new URLSearchParams(window.location.search).has("code");
 
-const googleLoginBtn = document.getElementById("googleLoginBtn");
+let oauthHandled = false;
+
+
+/* ==================================
+   HELPER FUNCTIONS
+================================== */
+
+function showLoginMessage(message) {
+    document.getElementById("loginMessage").textContent = message;
+}
+
+function showDashboard() {
+    document.getElementById("loginScreen").style.display = "none";
+}
+
+function getTodayDate() {
+    const now = new Date();
+
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+}
+
+
+/* ==================================
+   GOOGLE LOGIN
+================================== */
+
+const googleLoginBtn =
+    document.getElementById("googleLoginBtn");
 
 googleLoginBtn.addEventListener("click", async function() {
+
+    googleLoginBtn.disabled = true;
     googleLoginBtn.textContent = "Connecting to Google...";
 
-    const { error } = await supabaseClient.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-            redirectTo: window.location.origin
-        }
-    });
+    showLoginMessage("");
 
-    if (error) {
-        document.getElementById("loginMessage").textContent = error.message;
+    try {
+        const { error } =
+            await supabaseClient.auth.signInWithOAuth({
+                provider: "google",
+                options: {
+                    redirectTo: window.location.origin
+                }
+            });
+
+        if (error) {
+            throw error;
+        }
+
+    } catch (error) {
+
+        showLoginMessage(error.message);
+
+        googleLoginBtn.disabled = false;
         googleLoginBtn.textContent = "Continue with Google";
     }
 });
 
-const loginForm = document.getElementById("loginForm");
+
+/* ==================================
+   EMAIL AND PASSWORD LOGIN
+================================== */
+
+const loginForm =
+    document.getElementById("loginForm");
 
 loginForm.addEventListener("submit", async function(event) {
+
     event.preventDefault();
 
-    const email = document.getElementById("loginEmail").value;
-    const password = document.getElementById("loginPassword").value;
-    const message = document.getElementById("loginMessage");
+    const email =
+        document.getElementById("loginEmail").value.trim();
 
-    message.textContent = "Signing in...";
+    const password =
+        document.getElementById("loginPassword").value;
 
-    const { data, error } = await supabaseClient.auth.signInWithPassword({
-        email: email,
-        password: password
-    });
+    const signInBtn =
+        document.getElementById("signInBtn");
 
-    if (error) {
-        message.textContent = error.message;
-        return;
+    signInBtn.disabled = true;
+    signInBtn.textContent = "Signing in...";
+
+    showLoginMessage("");
+
+    try {
+
+        const { error } =
+            await supabaseClient.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+
+        if (error) {
+            throw error;
+        }
+
+        showDashboard();
+        await loadReminders();
+
+    } catch (error) {
+
+        showLoginMessage(error.message);
+
+    } finally {
+
+        signInBtn.disabled = false;
+        signInBtn.textContent = "Sign In";
     }
-
-    document.getElementById("loginScreen").style.display = "none";
-await loadReminders();
 });
 
-const form = document.getElementById("reminderForm");
 
-form.addEventListener("submit", async function(event) {
+/* ==================================
+   AUTHENTICATION STATE LISTENER
+================================== */
+
+/*
+   IMPORTANT:
+   Do not use async/await for Supabase requests
+   directly inside this callback.
+
+   The setTimeout lets the authentication callback
+   finish before loadReminders makes another request.
+*/
+
+supabaseClient.auth.onAuthStateChange(
+    function(event, session) {
+
+        if (
+            isOAuthCallback &&
+            !oauthHandled &&
+            session &&
+            (event === "SIGNED_IN" || event === "INITIAL_SESSION")
+        ) {
+
+            oauthHandled = true;
+            isOAuthCallback = false;
+
+            setTimeout(function() {
+
+                showDashboard();
+
+                loadReminders().catch(function(error) {
+                    console.error(
+                        "Dashboard loading error:",
+                        error
+                    );
+                });
+
+                window.history.replaceState(
+                    {},
+                    document.title,
+                    window.location.pathname
+                );
+
+            }, 0);
+        }
+    }
+);
+
+
+/* ==================================
+   ADD REMINDER
+================================== */
+
+const reminderForm =
+    document.getElementById("reminderForm");
+
+reminderForm.addEventListener("submit", async function(event) {
+
     event.preventDefault();
 
-    const { data: { user }, error: userError } =
-        await supabaseClient.auth.getUser();
+    const addButton =
+        document.getElementById("addReminderBtn");
 
-    if (userError || !user) {
-        alert("Please sign in again.");
-        return;
-    }
+    addButton.disabled = true;
+    addButton.textContent = "Saving...";
 
-    const reminderData = {
-        user_id: user.id,
-        customer_name: document.getElementById("customerName").value.trim(),
-        phone_number: document.getElementById("phoneNumber").value.trim(),
-        reminder_date: document.getElementById("reminderDate").value,
-        reminder_time: document.getElementById("reminderTime").value
-    };
+    try {
 
-    const { data, error } = await supabaseClient
-        .from("reminders")
-        .insert(reminderData)
-        .select()
-        .single();
+        const {
+            data: { user },
+            error: userError
+        } = await supabaseClient.auth.getUser();
 
-    if (error) {
-        alert("Could not save reminder: " + error.message);
-        return;
-    }
+        if (userError || !user) {
+            throw new Error("Please sign in again.");
+        }
 
-    reminders.push({
-        id: data.id,
-        name: data.customer_name,
-        phone: data.phone_number,
-        date: data.reminder_date,
-        time: data.reminder_time
-    });
+        const reminderData = {
+            user_id: user.id,
+            customer_name:
+                document.getElementById("customerName").value.trim(),
+            phone_number:
+                document.getElementById("phoneNumber").value.trim(),
+            reminder_date:
+                document.getElementById("reminderDate").value,
+            reminder_time:
+                document.getElementById("reminderTime").value
+        };
 
-    form.reset();
-    renderReminders();
-});
-
-async function loadReminders() {
-    const { data: { user }, error: userError } =
-        await supabaseClient.auth.getUser();
-
-    if (userError || !user) {
-        return;
-    }
-
-    const { data: profile, error: profileError } =
-        await supabaseClient
-            .from("profiles")
-            .select("role")
-            .eq("id", user.id)
+        const { data, error } = await supabaseClient
+            .from("reminders")
+            .insert(reminderData)
+            .select()
             .single();
 
+        if (error) {
+            throw error;
+        }
+
+        reminders.push({
+            id: data.id,
+            name: data.customer_name,
+            phone: data.phone_number,
+            date: data.reminder_date,
+            time: data.reminder_time
+        });
+
+        reminderForm.reset();
+        renderReminders();
+
+    } catch (error) {
+
+        alert("Could not save reminder: " + error.message);
+
+    } finally {
+
+        addButton.disabled = false;
+        addButton.textContent = "+ Create Reminder";
+    }
+});
+
+
+/* ==================================
+   LOAD REMINDERS
+================================== */
+
+async function loadReminders() {
+
+    const {
+        data: { user },
+        error: userError
+    } = await supabaseClient.auth.getUser();
+
+    if (userError || !user) {
+        throw new Error("Could not identify signed-in user.");
+    }
+
+    const {
+        data: profile,
+        error: profileError
+    } = await supabaseClient
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
     if (profileError) {
-        alert("Could not load user profile: " + profileError.message);
-        return;
+        throw new Error(
+            "Could not load user profile: " + profileError.message
+        );
     }
 
     let query = supabaseClient
@@ -592,50 +814,78 @@ async function loadReminders() {
         query = query.eq("user_id", user.id);
     }
 
-    const { data, error } = await query;
+    const {
+        data,
+        error
+    } = await query;
 
     if (error) {
-        alert("Could not load reminders: " + error.message);
-        return;
+        throw new Error(
+            "Could not load reminders: " + error.message
+        );
     }
 
-    reminders = data.map(r => ({
-        id: r.id,
-        name: r.customer_name,
-        phone: r.phone_number,
-        date: r.reminder_date,
-        time: r.reminder_time
-    }));
+    reminders = data.map(function(r) {
+        return {
+            id: r.id,
+            name: r.customer_name,
+            phone: r.phone_number,
+            date: r.reminder_date,
+            time: r.reminder_time
+        };
+    });
 
     renderReminders();
 }
 
-function renderReminders() {
-    const list = document.getElementById("reminderList");
-    const today = new Date().toLocaleDateString("en-CA");
 
-    document.getElementById("totalCount").textContent = reminders.length;
+/* ==================================
+   RENDER REMINDERS
+================================== */
+
+function renderReminders() {
+
+    const list =
+        document.getElementById("reminderList");
+
+    const today = getTodayDate();
+
+    document.getElementById("totalCount").textContent =
+        reminders.length;
+
     document.getElementById("todayCount").textContent =
-        reminders.filter(r => r.date === today).length;
+        reminders.filter(function(r) {
+            return r.date === today;
+        }).length;
+
     document.getElementById("upcomingCount").textContent =
-        reminders.filter(r => r.date >= today).length;
+        reminders.filter(function(r) {
+            return r.date >= today;
+        }).length;
 
     if (reminders.length === 0) {
-        list.innerHTML = '<div class="empty">No reminders yet.</div>';
+
+        list.innerHTML =
+            '<div class="empty">No reminders yet.</div>';
+
         return;
     }
 
     list.innerHTML = "";
 
-    reminders.forEach(r => {
+    reminders.forEach(function(r) {
+
         const item = document.createElement("div");
         item.className = "reminder";
 
         const details = document.createElement("div");
+
         const name = document.createElement("strong");
         name.textContent = r.name;
+
         const phone = document.createElement("p");
         phone.textContent = r.phone;
+
         const date = document.createElement("p");
         date.textContent = r.date + " • " + r.time;
 
@@ -644,9 +894,38 @@ function renderReminders() {
         const button = document.createElement("button");
         button.className = "complete-btn";
         button.textContent = "Complete";
-        button.addEventListener("click", () => {
-            reminders = reminders.filter(x => x.id !== r.id);
-            renderReminders();
+
+        button.addEventListener("click", async function() {
+
+            button.disabled = true;
+            button.textContent = "Completing...";
+
+            try {
+
+                const { error } = await supabaseClient
+                    .from("reminders")
+                    .delete()
+                    .eq("id", r.id);
+
+                if (error) {
+                    throw error;
+                }
+
+                reminders = reminders.filter(function(x) {
+                    return x.id !== r.id;
+                });
+
+                renderReminders();
+
+            } catch (error) {
+
+                alert(
+                    "Could not complete reminder: " + error.message
+                );
+
+                button.disabled = false;
+                button.textContent = "Complete";
+            }
         });
 
         item.append(details, button);
@@ -654,33 +933,6 @@ function renderReminders() {
     });
 }
 
-async function checkLoginSession() {
-    const { data: { session }, error } =
-        await supabaseClient.auth.getSession();
-
-    if (error) {
-        console.error("Session error:", error.message);
-        return;
-    }
-
-    if (session) {
-        document.getElementById("loginScreen").style.display = "none";
-        await loadReminders();
-    }
-}
-
-supabaseClient.auth.onAuthStateChange((event, session) => {
-    if (
-        event === "SIGNED_IN" &&
-        session &&
-        window.location.search.includes("code=")
-    ) {
-        setTimeout(() => {
-            document.getElementById("loginScreen").style.display = "none";
-            loadReminders();
-        }, 0);
-    }
-});
 </script>
 
 </body>
