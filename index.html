@@ -669,6 +669,9 @@ async function checkLoginSession() {
     }
 }
 
+if (window.location.search.includes("code=")) {
+    checkLoginSession();
+}
 
 </script>
 
