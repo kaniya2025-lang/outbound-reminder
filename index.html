@@ -669,10 +669,14 @@ async function checkLoginSession() {
     }
 }
 
-if (window.location.search.includes("code=")) {
-    checkLoginSession();
-}
-
+supabaseClient.auth.onAuthStateChange((event, session) => {
+    if (event === "SIGNED_IN" && session) {
+        setTimeout(async () => {
+            document.getElementById("loginScreen").style.display = "none";
+            await loadReminders();
+        }, 0);
+    }
+});
 </script>
 
 </body>
