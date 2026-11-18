@@ -343,6 +343,9 @@ body {
         placeholder="Enter your password"
         required>
 
+<button type="button" id="googleLoginBtn">
+    Continue with Google
+</button>
     <button type="submit">Sign In</button>
     <p id="loginMessage"></p>
 </form>
@@ -455,6 +458,24 @@ const supabaseClient = window.supabase.createClient(
 );
 
 let reminders = [];
+
+const googleLoginBtn = document.getElementById("googleLoginBtn");
+
+googleLoginBtn.addEventListener("click", async function() {
+    googleLoginBtn.textContent = "Connecting to Google...";
+
+    const { error } = await supabaseClient.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+            redirectTo: window.location.origin
+        }
+    });
+
+    if (error) {
+        document.getElementById("loginMessage").textContent = error.message;
+        googleLoginBtn.textContent = "Continue with Google";
+    }
+});
 
 const loginForm = document.getElementById("loginForm");
 
