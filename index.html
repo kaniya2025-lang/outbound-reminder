@@ -1,0 +1,639 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OUTBOUND REMINDER</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #f4f7fc;
+    color: #25334a;
+}
+
+.layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 245px;
+    background: #ffffff;
+    padding: 28px 18px;
+    border-right: 1px solid #e9eef5;
+}
+
+.logo {
+    font-size: 19px;
+    font-weight: bold;
+    color: #2478e8;
+    margin-bottom: 45px;
+}
+
+.logo span {
+    display: block;
+    font-size: 11px;
+    color: #8995a7;
+    margin-top: 7px;
+    letter-spacing: 2px;
+}
+
+.nav-title {
+    font-size: 11px;
+    color: #9ba6b5;
+    margin: 25px 12px 12px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.nav-item {
+    padding: 14px 13px;
+    border-radius: 10px;
+    margin-bottom: 7px;
+    color: #66758a;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.nav-item.active {
+    background: #eaf3ff;
+    color: #2478e8;
+    font-weight: bold;
+}
+
+.main {
+    flex: 1;
+    padding: 32px;
+    min-width: 0;
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    gap: 15px;
+}
+
+.topbar h1 {
+    font-size: 25px;
+}
+
+.topbar p {
+    color: #929eae;
+    margin-top: 7px;
+    font-size: 13px;
+}
+
+.profile {
+    background: white;
+    padding: 12px 18px;
+    border-radius: 12px;
+    font-size: 13px;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 28px;
+}
+
+.stat-card, .panel {
+    background: white;
+    border-radius: 15px;
+    padding: 23px;
+    box-shadow: 0 4px 18px rgba(30, 60, 100, 0.04);
+}
+
+.stat-card p {
+    color: #8995a7;
+    font-size: 13px;
+}
+
+.stat-card h2 {
+    font-size: 29px;
+    margin-top: 14px;
+    color: #2478e8;
+}
+
+.content {
+    display: grid;
+    grid-template-columns: minmax(280px, 0.9fr) minmax(320px, 1.4fr);
+    gap: 22px;
+}
+
+.panel h3 {
+    font-size: 17px;
+    margin-bottom: 22px;
+}
+
+.form-group {
+    margin-bottom: 17px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 9px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 13px;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    outline: none;
+    font-size: 14px;
+}
+
+.form-group input:focus {
+    border-color: #2478e8;
+}
+
+.add-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    background: #2478e8;
+    color: white;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.add-btn:hover {
+    background: #1765cc;
+}
+
+.reminder {
+    padding: 16px 0;
+    border-bottom: 1px solid #edf0f5;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.reminder:last-child {
+    border-bottom: none;
+}
+
+.reminder strong {
+    font-size: 14px;
+}
+
+.reminder p {
+    color: #8995a7;
+    font-size: 12px;
+    margin-top: 7px;
+}
+
+.complete-btn {
+    background: #e9f8ef;
+    color: #219653;
+    border: none;
+    border-radius: 7px;
+    padding: 9px 12px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.empty {
+    color: #9ba6b5;
+    font-size: 13px;
+    padding: 15px 0;
+}
+
+@media(max-width: 850px) {
+    .sidebar { width: 190px; }
+    .content { grid-template-columns: 1fr; }
+}
+
+@media(max-width: 600px) {
+    .sidebar { display: none; }
+    .main { padding: 18px; }
+    .stats { grid-template-columns: 1fr; }
+    .topbar h1 { font-size: 20px; }
+}
+
+.login-screen {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #eaf3ff, #f7faff);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.login-card {
+    background: white;
+    width: 100%;
+    max-width: 420px;
+    padding: 42px 35px;
+    border-radius: 20px;
+    box-shadow: 0 15px 50px rgba(30, 80, 150, 0.12);
+}
+
+.login-logo {
+    color: #2478e8;
+    font-size: 25px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.login-subtitle {
+    text-align: center;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: #929eae;
+    margin-top: 7px;
+    margin-bottom: 35px;
+}
+
+.login-card h2 {
+    font-size: 25px;
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.login-description {
+    color: #8995a7;
+    text-align: center;
+    font-size: 13px;
+    margin-bottom: 28px;
+}
+
+.login-card label {
+    display: block;
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 9px;
+}
+
+.login-card input {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    margin-bottom: 20px;
+    outline: none;
+}
+
+.login-card button {
+    width: 100%;
+    padding: 15px;
+    background: #2478e8;
+    color: white;
+    border: none;
+    border-radius: 9px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#loginMessage {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 13px;
+    color: #e04b4b;
+}
+</style>
+</head>
+
+<body>
+
+
+<div id="loginScreen" class="login-screen">
+    <div class="login-card">
+        <div class="login-logo">OUTBOUND</div>
+        <p class="login-subtitle">REMINDER SYSTEM</p>
+
+        <h2>Welcome Back!</h2>
+        <p class="login-description">Sign in to your account</p>
+
+        <form id="loginForm" autocomplete="on">
+    <label>Email Address</label>
+    <input
+        type="email"
+        id="loginEmail"
+        name="username"
+        autocomplete="username"
+        placeholder="Enter your email"
+        required>
+
+    <label>Password</label>
+    <input
+        type="password"
+        id="loginPassword"
+        name="password"
+        autocomplete="current-password"
+        placeholder="Enter your password"
+        required>
+
+    <button type="submit">Sign In</button>
+    <p id="loginMessage"></p>
+</form>
+    </div>
+</div>
+
+
+<div class="layout">
+
+    <aside class="sidebar">
+        <div class="logo">
+            OUTBOUND
+            <span>REMINDER SYSTEM</span>
+        </div>
+
+        <div class="nav-title">MENU</div>
+        <div class="nav-item active">▦ &nbsp; Dashboard</div>
+        <div class="nav-item">＋ &nbsp; Add Reminder</div>
+        <div class="nav-item">◷ &nbsp; My Reminders</div>
+        <div class="nav-item">✓ &nbsp; Call Log</div>
+
+        <div class="nav-title">ACCOUNT</div>
+        <div class="nav-item">⚙ &nbsp; Settings</div>
+        <div class="nav-item">ⓘ &nbsp; About</div>
+    </aside>
+
+    <main class="main">
+
+        <header class="topbar">
+            <div>
+                <h1>Dashboard</h1>
+                <p>Welcome back! Manage your outbound calls.</p>
+            </div>
+            <div class="profile">👤 &nbsp; Agent Account</div>
+        </header>
+
+        <section class="stats">
+            <div class="stat-card">
+                <p>Total Reminders</p>
+                <h2 id="totalCount">0</h2>
+            </div>
+            <div class="stat-card">
+                <p>Today's Reminders</p>
+                <h2 id="todayCount">0</h2>
+            </div>
+            <div class="stat-card">
+                <p>Upcoming Reminders</p>
+                <h2 id="upcomingCount">0</h2>
+            </div>
+        </section>
+
+        <section class="content">
+
+            <div class="panel">
+                <h3>＋ Add New Reminder</h3>
+
+                <form id="reminderForm">
+
+                    <div class="form-group">
+                        <label>Customer Name</label>
+                        <input type="text" id="customerName"
+                        placeholder="Enter customer name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="phoneNumber"
+                        placeholder="Enter phone number" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Reminder Date</label>
+                        <input type="date" id="reminderDate" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Reminder Time</label>
+                        <input type="time" id="reminderTime" required>
+                    </div>
+
+                    <button class="add-btn" type="submit">
+                        + Create Reminder
+                    </button>
+
+                </form>
+            </div>
+
+            <div class="panel">
+                <h3>◷ Upcoming Reminders</h3>
+                <div id="reminderList">
+                    <div class="empty">No reminders yet.</div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const SUPABASE_URL = "https://xitfyrauejgmzluyrhna.supabase.co";
+
+const SUPABASE_KEY = "sb_publishable_VrXtVFozj2SpYtj4sEgxCQ_kjtkIJoT";
+
+const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+let reminders = [];
+
+const loginForm = document.getElementById("loginForm");
+
+loginForm.addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const email = document.getElementById("loginEmail").value;
+    const password = document.getElementById("loginPassword").value;
+    const message = document.getElementById("loginMessage");
+
+    message.textContent = "Signing in...";
+
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email: email,
+        password: password
+    });
+
+    if (error) {
+        message.textContent = error.message;
+        return;
+    }
+
+    document.getElementById("loginScreen").style.display = "none";
+await loadReminders();
+});
+
+const form = document.getElementById("reminderForm");
+
+form.addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const { data: { user }, error: userError } =
+        await supabaseClient.auth.getUser();
+
+    if (userError || !user) {
+        alert("Please sign in again.");
+        return;
+    }
+
+    const reminderData = {
+        user_id: user.id,
+        customer_name: document.getElementById("customerName").value.trim(),
+        phone_number: document.getElementById("phoneNumber").value.trim(),
+        reminder_date: document.getElementById("reminderDate").value,
+        reminder_time: document.getElementById("reminderTime").value
+    };
+
+    const { data, error } = await supabaseClient
+        .from("reminders")
+        .insert(reminderData)
+        .select()
+        .single();
+
+    if (error) {
+        alert("Could not save reminder: " + error.message);
+        return;
+    }
+
+    reminders.push({
+        id: data.id,
+        name: data.customer_name,
+        phone: data.phone_number,
+        date: data.reminder_date,
+        time: data.reminder_time
+    });
+
+    form.reset();
+    renderReminders();
+});
+
+async function loadReminders() {
+    const { data: { user }, error: userError } =
+        await supabaseClient.auth.getUser();
+
+    if (userError || !user) {
+        return;
+    }
+
+    const { data: profile, error: profileError } =
+        await supabaseClient
+            .from("profiles")
+            .select("role")
+            .eq("id", user.id)
+            .single();
+
+    if (profileError) {
+        alert("Could not load user profile: " + profileError.message);
+        return;
+    }
+
+    let query = supabaseClient
+        .from("reminders")
+        .select("*")
+        .order("reminder_date", { ascending: true })
+        .order("reminder_time", { ascending: true });
+
+    if (profile.role !== "admin") {
+        query = query.eq("user_id", user.id);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+        alert("Could not load reminders: " + error.message);
+        return;
+    }
+
+    reminders = data.map(r => ({
+        id: r.id,
+        name: r.customer_name,
+        phone: r.phone_number,
+        date: r.reminder_date,
+        time: r.reminder_time
+    }));
+
+    renderReminders();
+}
+
+function renderReminders() {
+    const list = document.getElementById("reminderList");
+    const today = new Date().toLocaleDateString("en-CA");
+
+    document.getElementById("totalCount").textContent = reminders.length;
+    document.getElementById("todayCount").textContent =
+        reminders.filter(r => r.date === today).length;
+    document.getElementById("upcomingCount").textContent =
+        reminders.filter(r => r.date >= today).length;
+
+    if (reminders.length === 0) {
+        list.innerHTML = '<div class="empty">No reminders yet.</div>';
+        return;
+    }
+
+    list.innerHTML = "";
+
+    reminders.forEach(r => {
+        const item = document.createElement("div");
+        item.className = "reminder";
+
+        const details = document.createElement("div");
+        const name = document.createElement("strong");
+        name.textContent = r.name;
+        const phone = document.createElement("p");
+        phone.textContent = r.phone;
+        const date = document.createElement("p");
+        date.textContent = r.date + " • " + r.time;
+
+        details.append(name, phone, date);
+
+        const button = document.createElement("button");
+        button.className = "complete-btn";
+        button.textContent = "Complete";
+        button.addEventListener("click", () => {
+            reminders = reminders.filter(x => x.id !== r.id);
+            renderReminders();
+        });
+
+        item.append(details, button);
+        list.appendChild(item);
+    });
+}
+
+async function checkLoginSession() {
+    const { data: { session }, error } =
+        await supabaseClient.auth.getSession();
+
+    if (error) {
+        console.error("Session error:", error.message);
+        return;
+    }
+
+    if (session) {
+        document.getElementById("loginScreen").style.display = "none";
+        await loadReminders();
+    }
+}
+
+
+</script>
+
+</body>
+</html>
