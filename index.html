@@ -289,6 +289,18 @@ el("dashboardNav").addEventListener("click",()=>showPage("dashboard"));el("addNa
 
 el("reminderForm").addEventListener("submit",async e=>{e.preventDefault();const b=el("addReminderBtn");b.disabled=true;b.textContent="Saving...";try{const{data:{user},error:userError}=await supabaseClient.auth.getUser();if(userError||!user)throw Error("Please sign in again.");const row={user_id:user.id,customer_name:el("customerName").value.trim(),phone_number:el("phoneNumber").value.trim(),reminder_date:el("reminderDate").value,reminder_time:el("reminderTime").value};const{error}=await supabaseClient.from("reminders").insert(row);if(error)throw error;el("reminderForm").reset();await loadReminders();alert("Reminder created successfully!");showPage("reminders")}catch(e){alert("Could not save reminder: "+e.message)}finally{b.disabled=false;b.textContent="+ Create Reminder"}});
 
+async function loadProfile(user){
+    const { data, error } = await supabaseClient
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+    if(error) throw error;
+
+    currentProfile = data;
+}
+
 async function loadReminders(){const{data:{user},error:userError}=await supabaseClient.auth.getUser();if(userError||!user)throw Error("Could not identify signed-in user.");currentUser=user;await loadProfile(user);let q=supabaseClient.from("reminders").select("*").order("reminder_date",{ascending:true}).order("reminder_time",{ascending:true});if(currentProfile.role!=="admin")q=q.eq("user_id",user.id);const{data,error}=await q;if(error)throw Error("Could not load reminders: "+error.message);const all=data||[];activityRows=all;reminders=all.filter(r=>r.status!=="completed").map(r=>({id:r.id,name:r.customer_name,phone:r.phone_number,date:r.reminder_date,time:r.reminder_time,status:r.status}));renderReminders();await loadActivityRows();renderActivityChart()}
 function renderReminders(){const list=el("reminderList"),today=todayISO();el("totalCount").textContent=reminders.length;el("todayCount").textContent=reminders.filter(r=>r.date===today).length;el("upcomingCount").textContent=reminders.filter(r=>r.date>=today).length;if(!reminders.length){list.innerHTML='<div class="empty">No reminders yet.</div>';return}list.innerHTML="";reminders.forEach(r=>{const item=document.createElement("div");item.className="reminder";const details=document.createElement("div"),name=document.createElement("strong"),phone=document.createElement("p"),date=document.createElement("p");name.textContent=r.name;phone.textContent=r.phone;date.textContent=r.date+" • "+r.time;details.append(name,phone,date);const b=document.createElement("button");b.className="complete-btn";b.textContent="Complete";b.addEventListener("click",async()=>{b.disabled=true;b.textContent="Completing...";try{const{error}=await supabaseClient.from("reminders").update({status:"completed"}).eq("id",r.id);if(error)throw error;await loadReminders()}catch(e){alert("Could not complete reminder: "+e.message);b.disabled=false;b.textContent="Complete"}});item.append(details,b);list.appendChild(item)})}
 
