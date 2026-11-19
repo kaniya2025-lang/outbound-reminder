@@ -301,11 +301,30 @@ async function loadProfile(user){
     currentProfile = data;
 }
 
+
 let notificationTimer = null;
 const notifiedReminders = new Set();
 
+const reminderNotificationIcon =
+    "data:image/svg+xml;charset=UTF-8," +
+    encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#287cf5"/>
+          <stop offset="100%" stop-color="#101d3b"/>
+        </linearGradient>
+      </defs>
+      <rect width="128" height="128" rx="28" fill="url(#g)"/>
+      <path d="M64 25c-17 0-27 13-27 30v17L27 88v7h74v-7L91 72V55c0-17-10-30-27-30z"
+        fill="white"/>
+      <path d="M52 102c2 9 22 9 24 0" fill="none"
+        stroke="white" stroke-width="7" stroke-linecap="round"/>
+      <circle cx="94" cy="30" r="12" fill="#55d6a5"/>
+    </svg>`);
+
 function checkDueReminders(){
-    if (!('Notification' in window) || Notification.permission !== "granted") return;
+    if (!("Notification" in window) || Notification.permission !== "granted") return;
 
     const now = new Date();
 
@@ -325,13 +344,27 @@ function checkDueReminders(){
             !localStorage.getItem(storageKey)
         ) {
             try {
-                new Notification("OUTBOUND REMINDER", {
-                    body: `${r.name} - ${r.phone}`,
+                const notification = new Notification("OUTBOUND REMINDER", {
+                    body:
+                        `CUSTOMER: ${r.name}\n` +
+                        `PHONE: ${r.phone}\n` +
+                        `TIME: ${r.time}`,
+                    icon: reminderNotificationIcon,
+                    badge: reminderNotificationIcon,
                     tag: `reminder-${reminderId}`,
-                    requireInteraction: true
+                    requireInteraction: true,
+                    silent: false
                 });
+
+                notification.onclick = function(){
+                    window.focus();
+                    showPage("reminders");
+                    notification.close();
+                };
+
                 notifiedReminders.add(reminderId);
                 localStorage.setItem(storageKey, "1");
+
             } catch (error) {
                 console.error("Could not show reminder notification:", error);
             }
@@ -341,9 +374,12 @@ function checkDueReminders(){
 
 function startNotificationChecker(){
     if (notificationTimer) clearInterval(notificationTimer);
+
     checkDueReminders();
+
     notificationTimer = setInterval(checkDueReminders, 15000);
 }
+
 
 async function loadReminders(){const{data:{user},error:userError}=await supabaseClient.auth.getUser();if(userError||!user)throw Error("Could not identify signed-in user.");currentUser=user;await loadProfile(user);let q=supabaseClient.from("reminders").select("*").order("reminder_date",{ascending:true}).order("reminder_time",{ascending:true});if(currentProfile.role!=="admin")q=q.eq("user_id",user.id);const{data,error}=await q;if(error)throw Error("Could not load reminders: "+error.message);const all=data||[];activityRows=all;reminders=all.filter(r=>r.status!=="completed").map(r=>({id:r.id,name:r.customer_name,phone:r.phone_number,date:r.reminder_date,time:r.reminder_time,status:r.status}));renderReminders();await loadActivityRows();renderActivityChart();startNotificationChecker()}
 function renderReminders(){const list=el("reminderList"),today=todayISO();el("totalCount").textContent=reminders.length;el("todayCount").textContent=reminders.filter(r=>r.date===today).length;el("upcomingCount").textContent=reminders.filter(r=>r.date>=today).length;if(!reminders.length){list.innerHTML='<div class="empty">No reminders yet.</div>';return}list.innerHTML="";reminders.forEach(r=>{const item=document.createElement("div");item.className="reminder";const details=document.createElement("div"),name=document.createElement("strong"),phone=document.createElement("p"),date=document.createElement("p");name.textContent=r.name;phone.textContent=r.phone;date.textContent=r.date+" • "+r.time;details.append(name,phone,date);const b=document.createElement("button");b.className="complete-btn";b.textContent="Complete";b.addEventListener("click",async()=>{b.disabled=true;b.textContent="Completing...";try{const{error}=await supabaseClient.from("reminders").update({status:"completed"}).eq("id",r.id);if(error)throw error;await loadReminders()}catch(e){alert("Could not complete reminder: "+e.message);b.disabled=false;b.textContent="Complete"}});item.append(details,b);list.appendChild(item)})}
