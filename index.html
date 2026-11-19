@@ -1,1643 +1,188 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OUTBOUND REMINDER</title>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
-:root {
-    --navy: #101d3b;
-    --navy-light: #1b2e55;
-    --blue: #287cf5;
-    --blue-dark: #1764d8;
-    --text: #233452;
-    --muted: #8493aa;
-    --glass: rgba(255,255,255,.70);
-    --border: rgba(255,255,255,.85);
-    --shadow: 0 12px 40px rgba(48,86,145,.10);
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: Inter, Arial, sans-serif;
-}
-
-body {
-    min-height: 100vh;
-    color: var(--text);
-    background:
-        radial-gradient(circle at 85% 10%, rgba(100,170,255,.35), transparent 30%),
-        radial-gradient(circle at 10% 90%, rgba(142,193,255,.35), transparent 30%),
-        linear-gradient(135deg,#eaf3ff,#f7faff 50%,#e8f1ff);
-}
-
-button, input {
-    font: inherit;
-}
-
-button {
-    cursor: pointer;
-}
-
-.layout {
-    display: flex;
-    min-height: 100vh;
-    padding: 18px;
-    gap: 18px;
-}
-
-/* SIDEBAR */
-
-.sidebar {
-    width: 255px;
-    flex-shrink: 0;
-    padding: 28px 18px;
-    color: white;
-    border-radius: 24px;
-    background: linear-gradient(160deg,#101d3b,#1c3768);
-    box-shadow: 0 18px 45px rgba(16,29,59,.20);
-    display: flex;
-    flex-direction: column;
-}
-
-.logo {
-    font-size: 21px;
-    font-weight: 800;
-    letter-spacing: 1px;
-    padding: 5px 12px;
-    margin-bottom: 42px;
-}
-
-.logo span {
-    display: block;
-    font-size: 10px;
-    color: #91b9f8;
-    letter-spacing: 3px;
-    margin-top: 7px;
-}
-
-.nav-title {
-    color: #8098bd;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    margin: 20px 12px 12px;
-}
-
-.nav-item {
-    display: flex;
-    align-items: center;
-    gap: 13px;
-    padding: 14px;
-    border-radius: 12px;
-    margin-bottom: 7px;
-    color: #c1cee2;
-    cursor: pointer;
-    font-size: 13px;
-    transition: .25s ease;
-}
-
-.nav-item .nav-icon {
-    width: 22px;
-    font-size: 17px;
-    text-align: center;
-}
-
-.nav-item:hover {
-    background: rgba(255,255,255,.12);
-    color: white;
-    transform: translateX(4px);
-}
-
-.nav-item.active {
-    color: white;
-    background: linear-gradient(100deg,#347ff0,#559aff);
-    box-shadow: 0 7px 20px rgba(45,124,245,.30);
-}
-
-.sidebar-bottom {
-    margin-top: auto;
-    padding-top: 25px;
-}
-
-.sidebar-user {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 13px 10px;
-    border-top: 1px solid rgba(255,255,255,.12);
-    margin-top: 20px;
-}
-
-.sidebar-user img {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    object-fit: cover;
-    background: #dceaff;
-}
-
-.sidebar-user > div {
-    min-width: 0;
-    flex: 1;
-}
-
-.sidebar-user strong {
-    display: block;
-    font-size: 12px;
-    color: white;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* MAIN */
-
-.main {
-    flex: 1;
-    min-width: 0;
-    padding: 12px 12px 30px;
-}
-
-.topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 28px;
-}
-
-.topbar h1 {
-    font-size: 27px;
-    font-weight: 800;
-    color: #192d50;
-}
-
-.topbar p {
-    color: var(--muted);
-    font-size: 13px;
-    margin-top: 8px;
-}
-
-.profile-button {
-    display: flex;
-    align-items: center;
-    gap: 11px;
-    padding: 9px 14px;
-    background: rgba(255,255,255,.70);
-    border: 1px solid white;
-    border-radius: 15px;
-    box-shadow: var(--shadow);
-    transition: .25s;
-}
-
-.profile-button:hover {
-    transform: translateY(-3px);
-}
-
-.profile-button img {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.profile-button strong {
-    display: block;
-    font-size: 12px;
-    color: var(--text);
-}
-
-.profile-button small {
-    display: block;
-    font-size: 10px;
-    color: var(--muted);
-    margin-top: 4px;
-}
-
-/* GLASS CARDS */
-
-.stats {
-    display: grid;
-    grid-template-columns: repeat(3,minmax(0,1fr));
-    gap: 18px;
-    margin-bottom: 22px;
-}
-
-.stat-card, .panel, .profile-panel {
-    background: var(--glass);
-    border: 1px solid var(--border);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    border-radius: 20px;
-    box-shadow: var(--shadow);
-    transition: .25s ease;
-}
-
-.stat-card {
-    padding: 23px;
-    position: relative;
-    overflow: hidden;
-}
-
-.stat-card:hover, .panel:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 18px 45px rgba(48,86,145,.15);
-}
-
-.stat-card::after {
-    content: "";
-    position: absolute;
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    background: rgba(70,145,255,.08);
-    right: -30px;
-    top: -35px;
-}
-
-.stat-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.stat-card p {
-    font-size: 12px;
-    color: var(--muted);
-    font-weight: 600;
-}
-
-.stat-icon {
-    width: 39px;
-    height: 39px;
-    border-radius: 12px;
-    display: grid;
-    place-items: center;
-    background: #e5efff;
-    color: #347ff0;
-    font-size: 19px;
-}
-
-.stat-card h2 {
-    margin-top: 17px;
-    font-size: 31px;
-    color: #1b3765;
-}
-
-.stat-card small {
-    color: #8a9ab2;
-    font-size: 11px;
-}
-
-/* CONTENT */
-
-.content {
-    display: grid;
-    grid-template-columns: minmax(270px,.85fr) minmax(320px,1.35fr);
-    gap: 20px;
-    align-items: start;
-}
-
-.panel {
-    padding: 24px;
-}
-
-.panel h3 {
-    font-size: 16px;
-    color: #1c3154;
-    margin-bottom: 22px;
-}
-
-.panel-subtitle {
-    color: var(--muted);
-    font-size: 11px;
-    margin-top: -15px;
-    margin-bottom: 20px;
-}
-
-.form-group {
-    margin-bottom: 17px;
-}
-
-.form-group label {
-    display: block;
-    font-size: 12px;
-    font-weight: 700;
-    margin-bottom: 9px;
-    color: #405575;
-}
-
-.form-group input {
-    width: 100%;
-    padding: 13px;
-    border: 1px solid rgba(160,185,220,.45);
-    background: rgba(255,255,255,.72);
-    border-radius: 11px;
-    outline: none;
-    font-size: 13px;
-    color: var(--text);
-    transition: .2s;
-}
-
-.form-group input:focus {
-    border-color: #4d91f5;
-    box-shadow: 0 0 0 3px rgba(77,145,245,.12);
-}
-
-.primary-btn {
-    width: 100%;
-    padding: 14px;
-    color: white;
-    border: none;
-    border-radius: 11px;
-    background: linear-gradient(110deg,#287cf5,#579cff);
-    box-shadow: 0 7px 18px rgba(40,124,245,.23);
-    font-size: 13px;
-    font-weight: 700;
-    transition: .25s;
-}
-
-.primary-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 24px rgba(40,124,245,.32);
-}
-
-.primary-btn:disabled {
-    opacity: .6;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.reminder {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 16px 0;
-    border-bottom: 1px solid rgba(150,175,210,.22);
-}
-
-.reminder:last-child {
-    border-bottom: none;
-}
-
-.reminder strong {
-    font-size: 13px;
-    color: #243a5c;
-}
-
-.reminder p {
-    color: #8796ab;
-    font-size: 11px;
-    margin-top: 6px;
-}
-
-.complete-btn {
-    background: #e5f8ee;
-    color: #219653;
-    border: 1px solid #c7eed8;
-    border-radius: 9px;
-    padding: 9px 12px;
-    font-size: 11px;
-    font-weight: 700;
-    white-space: nowrap;
-}
-
-.complete-btn:hover {
-    background: #d4f3e2;
-}
-
-.empty {
-    color: #91a0b4;
-    font-size: 12px;
-    padding: 18px 0;
-    text-align: center;
-}
-
-/* PROFILE PANEL */
-
-.profile-panel {
-    padding: 25px;
-    margin-bottom: 22px;
-    display: none;
-}
-
-.profile-heading {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 22px;
-}
-
-.profile-heading h3 {
-    font-size: 17px;
-}
-
-.profile-details {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    flex-wrap: wrap;
-}
-
-.profile-large-photo {
-    width: 85px;
-    height: 85px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 4px solid white;
-    box-shadow: 0 5px 20px rgba(50,100,170,.15);
-    background: #e5efff;
-}
-
-.profile-info h2 {
-    font-size: 19px;
-    color: #20375c;
-}
-
-.profile-info p {
-    font-size: 12px;
-    color: var(--muted);
-    margin-top: 7px;
-}
-
-.role-badge {
-    display: inline-block;
-    margin-top: 10px;
-    padding: 6px 11px;
-    background: #e5efff;
-    color: #287cf5;
-    border-radius: 20px;
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-}
-
-.profile-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 22px;
-}
-
-.secondary-btn, .signout-btn {
-    border: 1px solid #dce7f5;
-    background: white;
-    padding: 11px 16px;
-    border-radius: 10px;
-    font-size: 12px;
-    font-weight: 700;
-}
-
-.secondary-btn {
-    color: #287cf5;
-}
-
-.signout-btn {
-    color: #d95353;
-}
-
-.profile-edit {
-    display: none;
-    margin-top: 20px;
-    max-width: 420px;
-}
-
-/* LOGIN */
-
-.login-screen {
-    position: fixed;
-    inset: 0;
-    z-index: 1000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    background:
-        radial-gradient(circle at 20% 20%,rgba(100,170,255,.30),transparent 35%),
-        linear-gradient(135deg,#eaf3ff,#f8fbff);
-}
-
-.login-card {
-    width: 100%;
-    max-width: 420px;
-    padding: 40px 34px;
-    background: rgba(255,255,255,.78);
-    backdrop-filter: blur(22px);
-    -webkit-backdrop-filter: blur(22px);
-    border: 1px solid white;
-    border-radius: 23px;
-    box-shadow: 0 20px 60px rgba(35,75,140,.15);
-}
-
-.login-logo {
-    text-align: center;
-    color: #287cf5;
-    font-size: 26px;
-    font-weight: 800;
-    letter-spacing: 1px;
-}
-
-.login-subtitle {
-    text-align: center;
-    font-size: 10px;
-    color: #94a4ba;
-    letter-spacing: 3px;
-    margin: 8px 0 34px;
-}
-
-.login-card h2 {
-    text-align: center;
-    font-size: 24px;
-    color: #20375c;
-}
-
-.login-description {
-    text-align: center;
-    color: #8999af;
-    font-size: 12px;
-    margin: 9px 0 26px;
-}
-
-.login-card label {
-    display: block;
-    font-size: 12px;
-    font-weight: 700;
-    margin-bottom: 8px;
-}
-
-.login-card input {
-    width: 100%;
-    padding: 14px;
-    border: 1px solid #dce7f5;
-    background: rgba(255,255,255,.85);
-    border-radius: 10px;
-    margin-bottom: 18px;
-    outline: none;
-    font-size: 13px;
-}
-
-.login-card input:focus {
-    border-color: #4d91f5;
-}
-
-.login-card button {
-    width: 100%;
-    padding: 14px;
-    background: linear-gradient(110deg,#287cf5,#579cff);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 700;
-}
-
-.login-card button:disabled {
-    opacity: .6;
-    cursor: not-allowed;
-}
-
-#googleLoginBtn {
-    margin-bottom: 13px;
-    background: white;
-    color: #287cf5;
-    border: 1px solid #287cf5;
-}
-
-#googleLoginBtn:hover {
-    background: #edf5ff;
-}
-
-#loginMessage {
-    text-align: center;
-    margin-top: 15px;
-    font-size: 12px;
-    color: #d95353;
-    overflow-wrap: anywhere;
-}
-
-/* RESPONSIVE */
-
-@media(max-width:1000px) {
-    .sidebar {
-        width: 220px;
-    }
-
-    .content {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media(max-width:700px) {
-    .layout {
-        padding: 10px;
-        gap: 10px;
-    }
-
-    .sidebar {
-        width: 65px;
-        padding: 20px 8px;
-        border-radius: 17px;
-    }
-
-    .logo {
-        font-size: 0;
-        text-align: center;
-        padding: 5px 0;
-        margin-bottom: 30px;
-    }
-
-    .logo::before {
-        content: "O";
-        font-size: 23px;
-    }
-
-    .logo span, .nav-title, .nav-item span.nav-label,
-    .sidebar-user div {
-        display: none;
-    }
-
-    .nav-item {
-        justify-content: center;
-        padding: 13px 5px;
-    }
-
-    .nav-item .nav-icon {
-        font-size: 20px;
-    }
-
-    .sidebar-user {
-        justify-content: center;
-        padding: 10px 0;
-    }
-
-    .sidebar-user img {
-        width: 35px;
-        height: 35px;
-    }
-
-    .main {
-        padding: 8px 4px 20px;
-    }
-
-    .topbar h1 {
-        font-size: 21px;
-    }
-
-    .topbar p {
-        font-size: 11px;
-    }
-
-    .profile-button {
-        padding: 7px;
-    }
-
-    .profile-button div {
-        display: none;
-    }
-
-    .profile-button img {
-        width: 36px;
-        height: 36px;
-    }
-
-    .stats {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
-
-    .stat-card {
-        padding: 18px;
-    }
-
-    .stat-card h2 {
-        font-size: 26px;
-    }
-
-    .panel {
-        padding: 18px;
-    }
-
-    .profile-panel {
-        padding: 18px;
-    }
-}
-
+:root{--navy:#101d3b;--navy2:#1c3768;--blue:#287cf5;--text:#233452;--muted:#8493aa;--glass:rgba(255,255,255,.76);--border:rgba(255,255,255,.9);--shadow:0 12px 40px rgba(48,86,145,.10)}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,Arial,sans-serif}
+body{min-height:100vh;color:var(--text);background:radial-gradient(circle at 85% 10%,rgba(100,170,255,.35),transparent 30%),radial-gradient(circle at 10% 90%,rgba(142,193,255,.35),transparent 30%),linear-gradient(135deg,#eaf3ff,#f7faff 50%,#e8f1ff)}
+button,input{font:inherit}button{cursor:pointer}
+.layout{display:flex;min-height:100vh;padding:18px;gap:18px}
+.sidebar{width:255px;flex-shrink:0;padding:28px 18px;color:white;border-radius:24px;background:linear-gradient(160deg,var(--navy),var(--navy2));box-shadow:0 18px 45px rgba(16,29,59,.2);display:flex;flex-direction:column}
+.logo{font-size:21px;font-weight:800;letter-spacing:1px;padding:5px 12px;margin-bottom:42px}.logo span{display:block;font-size:10px;color:#91b9f8;letter-spacing:3px;margin-top:7px}
+.nav-title{color:#8098bd;font-size:10px;font-weight:700;letter-spacing:2px;margin:20px 12px 12px}
+.nav-item{display:flex;align-items:center;gap:13px;padding:14px;border-radius:12px;margin-bottom:7px;color:#c1cee2;cursor:pointer;font-size:13px;transition:.25s}
+.nav-item .nav-icon{width:22px;font-size:17px;text-align:center}.nav-item:hover{background:rgba(255,255,255,.12);color:white;transform:translateX(4px)}
+.nav-item.active{color:white;background:linear-gradient(100deg,#347ff0,#559aff);box-shadow:0 7px 20px rgba(45,124,245,.3)}
+.sidebar-bottom{margin-top:auto;padding-top:25px}.sidebar-user{display:flex;align-items:center;gap:10px;padding:13px 10px;border-top:1px solid rgba(255,255,255,.12);margin-top:20px}
+.sidebar-user img{width:38px;height:38px;border-radius:50%;object-fit:cover;background:#dceaff}.sidebar-user>div{min-width:0;flex:1}
+.sidebar-user strong{display:block;font-size:12px;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sidebar-user small{display:block;color:#9fb3d2;font-size:10px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.main{flex:1;min-width:0;padding:12px 12px 30px}.topbar{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:28px}
+.topbar h1{font-size:27px;font-weight:800;color:#192d50}.topbar p{color:var(--muted);font-size:13px;margin-top:8px}
+.profile-button{display:flex;align-items:center;gap:11px;padding:9px 14px;background:rgba(255,255,255,.7);border:1px solid white;border-radius:15px;box-shadow:var(--shadow);transition:.25s}
+.profile-button:hover{transform:translateY(-3px)}.profile-button img{width:38px;height:38px;border-radius:50%;object-fit:cover}
+.profile-button strong{display:block;font-size:12px;color:var(--text)}.profile-button small{display:block;font-size:10px;color:var(--muted);margin-top:4px}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-bottom:22px}
+.stat-card,.panel,.profile-panel{background:var(--glass);border:1px solid var(--border);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-radius:20px;box-shadow:var(--shadow);transition:.25s ease}
+.stat-card{padding:23px;position:relative;overflow:hidden}.stat-card:hover,.panel:hover{transform:translateY(-3px);box-shadow:0 18px 45px rgba(48,86,145,.15)}
+.stat-card:after{content:"";position:absolute;width:100px;height:100px;border-radius:50%;background:rgba(70,145,255,.08);right:-30px;top:-35px}
+.stat-top{display:flex;align-items:center;justify-content:space-between}.stat-card p{font-size:12px;color:var(--muted);font-weight:600}
+.stat-icon{width:39px;height:39px;border-radius:12px;display:grid;place-items:center;background:#e5efff;color:#347ff0;font-size:19px}
+.stat-card h2{margin-top:17px;font-size:31px;color:#1b3765}.stat-card small{color:#8a9ab2;font-size:11px}
+.panel{padding:24px}.panel h3{font-size:16px;color:#1c3154;margin-bottom:22px}.panel-subtitle{color:var(--muted);font-size:11px;margin-top:-15px;margin-bottom:20px}
+.page-section{display:none}.page-section.active{display:block}
+.activity-head{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;flex-wrap:wrap}
+.activity-filters{display:flex;gap:8px;margin-bottom:18px}
+.activity-filter{border:1px solid #d9e6f8;background:white;color:#627590;padding:9px 13px;border-radius:9px;font-size:11px;font-weight:700}
+.activity-filter.active{background:#287cf5;color:white;border-color:#287cf5}
+.chart-container{position:relative;height:330px;width:100%}
+.form-group{margin-bottom:17px}.form-group label{display:block;font-size:12px;font-weight:700;margin-bottom:9px;color:#405575}
+.form-group input{width:100%;padding:13px;border:1px solid rgba(160,185,220,.45);background:rgba(255,255,255,.72);border-radius:11px;outline:none;font-size:13px;color:var(--text);transition:.2s}
+.form-group input:focus{border-color:#4d91f5;box-shadow:0 0 0 3px rgba(77,145,245,.12)}
+.primary-btn{width:100%;padding:14px;color:white;border:0;border-radius:11px;background:linear-gradient(110deg,#287cf5,#579cff);box-shadow:0 7px 18px rgba(40,124,245,.23);font-size:13px;font-weight:700;transition:.25s}
+.primary-btn:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(40,124,245,.32)}.primary-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.reminder{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0;border-bottom:1px solid rgba(150,175,210,.22)}
+.reminder:last-child{border-bottom:none}.reminder strong{font-size:13px;color:#243a5c}.reminder p{color:#8796ab;font-size:11px;margin-top:6px}
+.complete-btn{background:#e5f8ee;color:#219653;border:1px solid #c7eed8;border-radius:9px;padding:9px 12px;font-size:11px;font-weight:700;white-space:nowrap}
+.complete-btn:hover{background:#d4f3e2}.empty{color:#91a0b4;font-size:12px;padding:18px 0;text-align:center}
+.profile-panel{padding:25px;margin-bottom:22px;display:none}.profile-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.profile-heading h3{font-size:17px}.profile-details{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.profile-large-photo{width:85px;height:85px;border-radius:50%;object-fit:cover;border:4px solid white;box-shadow:0 5px 20px rgba(50,100,170,.15);background:#e5efff}
+.profile-info h2{font-size:19px;color:#20375c}.profile-info p{font-size:12px;color:var(--muted);margin-top:7px}
+.role-badge{display:inline-block;margin-top:10px;padding:6px 11px;background:#e5efff;color:#287cf5;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase}
+.profile-actions{display:flex;gap:10px;margin-top:22px}.secondary-btn,.signout-btn{border:1px solid #dce7f5;background:white;padding:11px 16px;border-radius:10px;font-size:12px;font-weight:700}
+.secondary-btn{color:#287cf5}.signout-btn{color:#d95353}.profile-edit{display:none;margin-top:20px;max-width:420px}
+.login-screen{position:fixed;inset:0;z-index:1000;display:flex;justify-content:center;align-items:center;padding:20px;background:radial-gradient(circle at 20% 20%,rgba(100,170,255,.3),transparent 35%),linear-gradient(135deg,#eaf3ff,#f8fbff)}
+.login-card{width:100%;max-width:420px;padding:40px 34px;background:rgba(255,255,255,.78);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);border:1px solid white;border-radius:23px;box-shadow:0 20px 60px rgba(35,75,140,.15)}
+.login-logo{text-align:center;color:#287cf5;font-size:26px;font-weight:800;letter-spacing:1px}.login-subtitle{text-align:center;font-size:10px;color:#94a4ba;letter-spacing:3px;margin:8px 0 34px}
+.login-card h2{text-align:center;font-size:24px;color:#20375c}.login-description{text-align:center;color:#8999af;font-size:12px;margin:9px 0 26px}
+.login-card label{display:block;font-size:12px;font-weight:700;margin-bottom:8px}.login-card input{width:100%;padding:14px;border:1px solid #dce7f5;background:rgba(255,255,255,.85);border-radius:10px;margin-bottom:18px;outline:none;font-size:13px}
+.login-card input:focus{border-color:#4d91f5}.login-card button{width:100%;padding:14px;background:linear-gradient(110deg,#287cf5,#579cff);color:white;border:0;border-radius:10px;font-size:13px;font-weight:700}
+.login-card button:disabled{opacity:.6;cursor:not-allowed}#googleLoginBtn{margin-bottom:13px;background:white;color:#287cf5;border:1px solid #287cf5}#googleLoginBtn:hover{background:#edf5ff}
+#loginMessage{ text-align:center;margin-top:15px;font-size:12px;color:#d95353;overflow-wrap:anywhere}
+@media(max-width:1000px){.sidebar{width:220px}.chart-container{height:290px}}
+@media(max-width:700px){.layout{padding:10px;gap:10px}.sidebar{width:65px;padding:20px 8px;border-radius:17px}
+.logo{font-size:0;text-align:center;padding:5px 0;margin-bottom:30px}.logo:before{content:"O";font-size:23px}
+.logo span,.nav-title,.nav-item span.nav-label,.sidebar-user div{display:none}.nav-item{justify-content:center;padding:13px 5px}.nav-item .nav-icon{font-size:20px}
+.sidebar-user{justify-content:center;padding:10px 0}.sidebar-user img{width:35px;height:35px}.main{padding:8px 4px 20px}
+.topbar h1{font-size:21px}.topbar p{font-size:11px}.profile-button{padding:7px}.profile-button div{display:none}.profile-button img{width:36px;height:36px}
+.stats{grid-template-columns:1fr;gap:12px}.stat-card{padding:18px}.stat-card h2{font-size:26px}.panel,.profile-panel{padding:18px}
+.chart-container{height:260px}.activity-filters{width:100%}.activity-filter{flex:1;padding:9px 5px}}
 </style>
 </head>
-
 <body>
-
-<!-- LOGIN SCREEN -->
-
-<div id="loginScreen" class="login-screen">
-    <div class="login-card">
-
-        <div class="login-logo">OUTBOUND</div>
-        <p class="login-subtitle">REMINDER SYSTEM</p>
-
-        <h2>Welcome Back!</h2>
-        <p class="login-description">Sign in to your department account</p>
-
-        <form id="loginForm" autocomplete="on">
-
-            <label>Email Address</label>
-            <input type="email" id="loginEmail"
-                name="username" autocomplete="username"
-                placeholder="Enter your email" required>
-
-            <label>Password</label>
-            <input type="password" id="loginPassword"
-                name="password" autocomplete="current-password"
-                placeholder="Enter your password" required>
-
-            <button type="button" id="googleLoginBtn">
-                Continue with Google
-            </button>
-
-            <button type="submit" id="signInBtn">
-                Sign In
-            </button>
-
-            <p id="loginMessage"></p>
-
-        </form>
-    </div>
-</div>
-
-
-<!-- MAIN APP -->
-
-<div class="layout" id="appLayout">
-
-    <aside class="sidebar">
-
-        <div class="logo">
-            OUTBOUND
-            <span>REMINDER SYSTEM</span>
-        </div>
-
-        <div class="nav-title">WORKSPACE</div>
-
-        <div class="nav-item active" id="dashboardNav">
-            <span class="nav-icon">▦</span>
-            <span class="nav-label">Dashboard</span>
-        </div>
-
-        <div class="nav-item" id="addNav">
-            <span class="nav-icon">＋</span>
-            <span class="nav-label">Add Reminder</span>
-        </div>
-
-        <div class="nav-item" id="remindersNav">
-            <span class="nav-icon">◷</span>
-            <span class="nav-label">My Reminders</span>
-        </div>
-
-        <div class="nav-title">ACCOUNT</div>
-
-        <div class="nav-item" id="profileNav">
-            <span class="nav-icon">◎</span>
-            <span class="nav-label">My Profile</span>
-        </div>
-
-        <div class="sidebar-bottom">
-            <div class="sidebar-user">
-                <img id="sidebarPhoto" alt="Profile photo">
-                <div>
-                    <strong id="sidebarName">Agent</strong>
-                    <small id="sidebarRole">Department Member</small>
-                </div>
-            </div>
-        </div>
-
-    </aside>
-
-
-    <main class="main">
-
-        <header class="topbar">
-            <div>
-                <h1 id="pageTitle">Dashboard</h1>
-                <p id="pageSubtitle">Welcome back! Manage your outbound calls.</p>
-            </div>
-
-            <button class="profile-button" id="topProfileBtn">
-                <img id="topPhoto" alt="Profile photo">
-                <div>
-                    <strong id="topName">Agent Account</strong>
-                    <small id="topRole">Department Member</small>
-                </div>
-            </button>
-        </header>
-
-
-        <!-- PROFILE -->
-
-        <section class="profile-panel" id="profilePanel">
-
-            <div class="profile-heading">
-                <h3>My Profile</h3>
-            </div>
-
-            <div class="profile-details">
-                <img id="profilePhoto" class="profile-large-photo"
-                    alt="Profile photo">
-
-                <div class="profile-info">
-                    <h2 id="profileName">User Name</h2>
-                    <p id="profileEmail">user@email.com</p>
-                    <span class="role-badge" id="profileRole">Agent</span>
-                </div>
-            </div>
-
-            <div class="profile-actions">
-                <button class="secondary-btn" id="editProfileBtn">
-                    Edit Profile
-                </button>
-
-                <button class="signout-btn" id="signOutBtn">
-                    Sign Out
-                </button>
-            </div>
-
-            <div class="profile-edit" id="profileEdit">
-                <div class="form-group">
-                    <label>Full Name</label>
-                    <input type="text" id="editFullName"
-                        placeholder="Enter your name">
-                </div>
-
-                <button class="primary-btn" id="saveProfileBtn">
-                    Save Changes
-                </button>
-            </div>
-
-            <p id="profileMessage" style="font-size:12px;margin-top:14px;color:#287cf5;"></p>
-
-        </section>
-
-
-        <!-- DASHBOARD -->
-
-        <section id="dashboardSection">
-
-            <section class="stats">
-
-                <div class="stat-card">
-                    <div class="stat-top">
-                        <p>Total Reminders</p>
-                        <div class="stat-icon">▦</div>
-                    </div>
-                    <h2 id="totalCount">0</h2>
-                    <small>All active reminders</small>
-                </div>
-
-                <div class="stat-card">
-                    <div class="stat-top">
-                        <p>Today's Reminders</p>
-                        <div class="stat-icon">◷</div>
-                    </div>
-                    <h2 id="todayCount">0</h2>
-                    <small>Scheduled for today</small>
-                </div>
-
-                <div class="stat-card">
-                    <div class="stat-top">
-                        <p>Upcoming Reminders</p>
-                        <div class="stat-icon">↗</div>
-                    </div>
-                    <h2 id="upcomingCount">0</h2>
-                    <small>Today and future reminders</small>
-                </div>
-
-            </section>
-
-
-            <section class="content">
-
-                <div class="panel" id="addReminderPanel">
-
-                    <h3>＋ Create New Reminder</h3>
-                    <p class="panel-subtitle">Schedule your next customer call</p>
-
-                    <form id="reminderForm">
-
-                        <div class="form-group">
-                            <label>Customer Name</label>
-                            <input type="text" id="customerName"
-                                placeholder="Enter customer name" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Phone Number</label>
-                            <input type="tel" id="phoneNumber"
-                                placeholder="Enter phone number" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Reminder Date</label>
-                            <input type="date" id="reminderDate" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Reminder Time</label>
-                            <input type="time" id="reminderTime" required>
-                        </div>
-
-                        <button class="primary-btn" type="submit"
-                            id="addReminderBtn">
-                            + Create Reminder
-                        </button>
-
-                    </form>
-                </div>
-
-
-                <div class="panel" id="reminderPanel">
-
-                    <h3>◷ Upcoming Reminders</h3>
-                    <p class="panel-subtitle">Your scheduled customer callbacks</p>
-
-                    <div id="reminderList">
-                        <div class="empty">No reminders yet.</div>
-                    </div>
-
-                </div>
-
-            </section>
-
-        </section>
-
-    </main>
-
-</div>
-
+<div id="loginScreen" class="login-screen"><div class="login-card">
+<div class="login-logo">OUTBOUND</div><p class="login-subtitle">REMINDER SYSTEM</p>
+<h2>Welcome Back!</h2><p class="login-description">Sign in to your department account</p>
+<form id="loginForm" autocomplete="on">
+<label>Email Address</label><input type="email" id="loginEmail" name="username" autocomplete="username" placeholder="Enter your email" required>
+<label>Password</label><input type="password" id="loginPassword" name="password" autocomplete="current-password" placeholder="Enter your password" required>
+<button type="button" id="googleLoginBtn">Continue with Google</button><button type="submit" id="signInBtn">Sign In</button><p id="loginMessage"></p>
+</form></div></div>
+
+<div class="layout" id="appLayout" style="display:none">
+<aside class="sidebar">
+<div class="logo">OUTBOUND<span>REMINDER SYSTEM</span></div>
+<div class="nav-title">WORKSPACE</div>
+<div class="nav-item active" id="dashboardNav"><span class="nav-icon">▦</span><span class="nav-label">Dashboard</span></div>
+<div class="nav-item" id="addNav"><span class="nav-icon">＋</span><span class="nav-label">Add Reminder</span></div>
+<div class="nav-item" id="remindersNav"><span class="nav-icon">◷</span><span class="nav-label">My Reminders</span></div>
+<div class="nav-title">ACCOUNT</div>
+<div class="nav-item" id="profileNav"><span class="nav-icon">◎</span><span class="nav-label">My Profile</span></div>
+<div class="sidebar-bottom"><div class="sidebar-user"><img id="sidebarPhoto" alt="Profile photo"><div><strong id="sidebarName">Agent</strong><small id="sidebarRole">Department Member</small></div></div></div>
+</aside>
+<main class="main">
+<header class="topbar"><div><h1 id="pageTitle">Dashboard</h1><p id="pageSubtitle">Your reminder activity at a glance.</p></div>
+<button class="profile-button" id="topProfileBtn"><img id="topPhoto" alt="Profile photo"><div><strong id="topName">Agent Account</strong><small id="topRole">Department Member</small></div></button></header>
+
+<section id="dashboardSection" class="page-section active">
+<section class="stats">
+<div class="stat-card"><div class="stat-top"><p>Total Reminders</p><div class="stat-icon">▦</div></div><h2 id="totalCount">0</h2><small>All active reminders</small></div>
+<div class="stat-card"><div class="stat-top"><p>Today's Reminders</p><div class="stat-icon">◷</div></div><h2 id="todayCount">0</h2><small>Scheduled for today</small></div>
+<div class="stat-card"><div class="stat-top"><p>Upcoming Reminders</p><div class="stat-icon">↗</div></div><h2 id="upcomingCount">0</h2><small>Today and future reminders</small></div>
+</section>
+<section class="panel">
+<div class="activity-head"><div><h3>Agent Daily Reminder Activity</h3><p class="panel-subtitle">Number of reminders each agent added per day</p></div>
+<div class="activity-filters"><button class="activity-filter active" id="last7Days">Last 7 Days</button><button class="activity-filter" id="last30Days">Last 30 Days</button></div></div>
+<div class="chart-container"><canvas id="agentActivityChart"></canvas></div><p id="chartMessage" class="empty">Activity chart will appear here.</p>
+</section>
+</section>
+
+<section id="addReminderSection" class="page-section">
+<div class="panel" style="max-width:680px"><h3>＋ Create New Reminder</h3><p class="panel-subtitle">Schedule your next customer call</p>
+<form id="reminderForm">
+<div class="form-group"><label>Customer Name</label><input type="text" id="customerName" placeholder="Enter customer name" required></div>
+<div class="form-group"><label>Phone Number</label><input type="tel" id="phoneNumber" placeholder="Enter phone number" required></div>
+<div class="form-group"><label>Reminder Date</label><input type="date" id="reminderDate" required></div>
+<div class="form-group"><label>Reminder Time</label><input type="time" id="reminderTime" required></div>
+<button class="primary-btn" type="submit" id="addReminderBtn">+ Create Reminder</button>
+</form></div></section>
+
+<section id="remindersSection" class="page-section">
+<div class="panel"><h3>◷ My Reminders</h3><p class="panel-subtitle">Your scheduled customer callbacks</p><div id="reminderList"><div class="empty">No reminders yet.</div></div></div>
+</section>
+
+<section class="profile-panel" id="profilePanel">
+<div class="profile-heading"><h3>My Profile</h3></div>
+<div class="profile-details"><img id="profilePhoto" class="profile-large-photo" alt="Profile photo"><div class="profile-info"><h2 id="profileName">User Name</h2><p id="profileEmail">user@email.com</p><span class="role-badge" id="profileRole">Agent</span></div></div>
+<div class="profile-actions"><button class="secondary-btn" id="editProfileBtn">Edit Profile</button><button class="signout-btn" id="signOutBtn">Sign Out</button></div>
+<div class="profile-edit" id="profileEdit"><div class="form-group"><label>Full Name</label><input type="text" id="editFullName" placeholder="Enter your name"></div><button class="primary-btn" id="saveProfileBtn">Save Changes</button></div>
+<p id="profileMessage" style="font-size:12px;margin-top:14px;color:#287cf5"></p>
+</section>
+</main></div>
 
 <script>
-/* ==================================
-   SUPABASE CONNECTION
-================================== */
-
-const SUPABASE_URL =
-    "https://xitfyrauejgmzluyrhna.supabase.co";
-
-/*
-  IMPORTANT:
-  Replace this with your existing sb_publishable_ key.
-  Never use an sb_secret_ key in frontend code.
-*/
-
-const SUPABASE_KEY =
-    "sb_publishable_VrXtVFozj2SpYtj4sEgxCQ_kjtkIJoT";
-
-const supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY,
-    {
-        auth: {
-            flowType: "pkce",
-            autoRefreshToken: true,
-            persistSession: true,
-            detectSessionInUrl: true
-        }
-    }
-);
-
-let reminders = [];
-let currentUser = null;
-let currentProfile = null;
-
-let isOAuthCallback =
-    new URLSearchParams(window.location.search).has("code");
-
-let oauthHandled = false;
-
-
-/* ==================================
-   ELEMENT HELPERS
-================================== */
-
-function element(id) {
-    return document.getElementById(id);
-}
-
-function showLoginMessage(message) {
-    element("loginMessage").textContent = message;
-}
-
-function showDashboard() {
-    element("loginScreen").style.display = "none";
-    element("appLayout").style.display = "flex";
-}
-
-function showLogin() {
-    element("loginScreen").style.display = "flex";
-    element("appLayout").style.display = "none";
-}
-
-function getTodayDate() {
-    const now = new Date();
-
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2,"0");
-    const day = String(now.getDate()).padStart(2,"0");
-
-    return `${year}-${month}-${day}`;
-}
-
-function getInitials(name) {
-    return (name || "U")
-        .trim()
-        .split(/\s+/)
-        .slice(0,2)
-        .map(function(part) {
-            return part.charAt(0).toUpperCase();
-        })
-        .join("") || "U";
-}
-
-function avatarPlaceholder(name) {
-    const initials = getInitials(name);
-    const svg =
-        '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120">' +
-        '<rect width="100%" height="100%" rx="60" fill="#dceaff"/>' +
-        '<text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle" ' +
-        'font-family="Arial" font-size="42" font-weight="bold" fill="#287cf5">' +
-        initials + '</text></svg>';
-
-    return "data:image/svg+xml;charset=UTF-8," +
-        encodeURIComponent(svg);
-}
-
-function setPhoto(imageId, photoUrl, name) {
-    const img = element(imageId);
-
-    img.src = photoUrl || avatarPlaceholder(name);
-
-    img.onerror = function() {
-        img.src = avatarPlaceholder(name);
-    };
-}
-
-
-/* ==================================
-   GOOGLE LOGIN
-================================== */
-
-element("googleLoginBtn").addEventListener("click", async function() {
-
-    const button = element("googleLoginBtn");
-
-    button.disabled = true;
-    button.textContent = "Connecting to Google...";
-
-    showLoginMessage("");
-
-    try {
-
-        const { error } =
-            await supabaseClient.auth.signInWithOAuth({
-                provider: "google",
-                options: {
-                    redirectTo: window.location.origin
-                }
-            });
-
-        if (error) throw error;
-
-    } catch (error) {
-
-        showLoginMessage(error.message);
-
-        button.disabled = false;
-        button.textContent = "Continue with Google";
-    }
-});
-
-
-/* ==================================
-   EMAIL LOGIN
-================================== */
-
-element("loginForm").addEventListener("submit", async function(event) {
-
-    event.preventDefault();
-
-    const email = element("loginEmail").value.trim();
-    const password = element("loginPassword").value;
-
-    const button = element("signInBtn");
-
-    button.disabled = true;
-    button.textContent = "Signing in...";
-
-    showLoginMessage("");
-
-    try {
-
-        const { error } =
-            await supabaseClient.auth.signInWithPassword({
-                email: email,
-                password: password
-            });
-
-        if (error) throw error;
-
-        const { data } = await supabaseClient.auth.getUser();
-
-        if (!data.user) {
-            throw new Error("Could not identify signed-in user.");
-        }
-
-        currentUser = data.user;
-
-        showDashboard();
-        await loadReminders();
-
-    } catch (error) {
-
-        showLoginMessage(error.message);
-
-    } finally {
-
-        button.disabled = false;
-        button.textContent = "Sign In";
-    }
-});
-
-
-/* ==================================
-   AUTH STATE LISTENER
-================================== */
-
-supabaseClient.auth.onAuthStateChange(function(event, session) {
-
-    if (
-        isOAuthCallback &&
-        !oauthHandled &&
-        session &&
-        (event === "SIGNED_IN" || event === "INITIAL_SESSION")
-    ) {
-
-        oauthHandled = true;
-        isOAuthCallback = false;
-
-        setTimeout(async function() {
-
-            try {
-
-                currentUser = session.user;
-
-                showDashboard();
-                await loadReminders();
-
-            } catch (error) {
-
-                console.error("Dashboard loading error:", error);
-                alert("Dashboard error: " + error.message);
-
-            }
-
-            window.history.replaceState(
-                {},
-                document.title,
-                window.location.pathname
-            );
-
-        }, 0);
-    }
-});
-
-
-/* ==================================
-   PROFILE
-================================== */
-
-async function loadProfile(user) {
-
-    currentUser = user;
-
-    const { data: profile, error } = await supabaseClient
-        .from("profiles")
-        .select("full_name, role")
-        .eq("id", user.id)
-        .single();
-
-    if (error) {
-        throw new Error("Could not load profile: " + error.message);
-    }
-
-    currentProfile = profile;
-
-    const metadata = user.user_metadata || {};
-
-    const name =
-        profile.full_name ||
-        metadata.full_name ||
-        metadata.name ||
-        user.email ||
-        "Department Member";
-
-    const photo =
-        metadata.avatar_url ||
-        metadata.picture ||
-        "";
-
-    const role = profile.role || "agent";
-
-    element("topName").textContent = name;
-    element("topRole").textContent = role;
-
-    element("sidebarName").textContent = name;
-    element("sidebarRole").textContent = role;
-
-    element("profileName").textContent = name;
-    element("profileEmail").textContent = user.email || "";
-    element("profileRole").textContent = role;
-
-    element("editFullName").value = name;
-
-    setPhoto("topPhoto", photo, name);
-    setPhoto("sidebarPhoto", photo, name);
-    setPhoto("profilePhoto", photo, name);
-}
-
-
-/* ==================================
-   EDIT PROFILE
-================================== */
-
-element("editProfileBtn").addEventListener("click", function() {
-
-    const editBox = element("profileEdit");
-
-    editBox.style.display =
-        editBox.style.display === "block" ? "none" : "block";
-
-    element("profileMessage").textContent = "";
-});
-
-element("saveProfileBtn").addEventListener("click", async function() {
-
-    const button = element("saveProfileBtn");
-    const fullName = element("editFullName").value.trim();
-
-    if (!fullName) {
-        element("profileMessage").textContent =
-            "Please enter your name.";
-        return;
-    }
-
-    button.disabled = true;
-    button.textContent = "Saving...";
-
-    try {
-
-        const { error } = await supabaseClient
-            .from("profiles")
-            .update({ full_name: fullName })
-            .eq("id", currentUser.id);
-
-        if (error) throw error;
-
-        await loadProfile(currentUser);
-
-        element("profileEdit").style.display = "none";
-        element("profileMessage").textContent =
-            "Profile updated successfully.";
-
-    } catch (error) {
-
-        element("profileMessage").textContent =
-            "Could not update profile: " + error.message;
-
-    } finally {
-
-        button.disabled = false;
-        button.textContent = "Save Changes";
-    }
-});
-
-
-/* ==================================
-   SIGN OUT
-================================== */
-
-element("signOutBtn").addEventListener("click", async function() {
-
-    if (!confirm("Are you sure you want to sign out?")) {
-        return;
-    }
-
-    const { error } = await supabaseClient.auth.signOut();
-
-    if (error) {
-        alert("Sign out failed: " + error.message);
-        return;
-    }
-
-    currentUser = null;
-    currentProfile = null;
-    reminders = [];
-
-    showLogin();
-});
-
-
-/* ==================================
-   NAVIGATION
-================================== */
-
-function setActiveNav(activeId) {
-
-    document.querySelectorAll(".nav-item").forEach(function(item) {
-        item.classList.remove("active");
-    });
-
-    element(activeId).classList.add("active");
-}
-
-function showPage(page) {
-
-    element("profilePanel").style.display =
-        page === "profile" ? "block" : "none";
-
-    element("dashboardSection").style.display =
-        page === "profile" ? "none" : "block";
-
-    if (page === "profile") {
-
-        element("pageTitle").textContent = "My Profile";
-        element("pageSubtitle").textContent =
-            "Manage your department account.";
-
-        setActiveNav("profileNav");
-
-    } else {
-
-        element("pageTitle").textContent =
-            page === "reminders" ? "My Reminders" : "Dashboard";
-
-        element("pageSubtitle").textContent =
-            page === "reminders"
-            ? "View your scheduled customer callbacks."
-            : "Welcome back! Manage your outbound calls.";
-
-        setActiveNav(
-            page === "reminders" ? "remindersNav" : "dashboardNav"
-        );
-    }
-
-    if (page === "add") {
-        element("addReminderPanel").scrollIntoView({
-            behavior: "smooth",
-            block: "center"
-        });
-    }
-
-    if (page === "reminders") {
-        element("reminderPanel").scrollIntoView({
-            behavior: "smooth",
-            block: "start"
-        });
-    }
-}
-
-element("dashboardNav").addEventListener("click", function() {
-    showPage("dashboard");
-});
-
-element("addNav").addEventListener("click", function() {
-    showPage("add");
-});
-
-element("remindersNav").addEventListener("click", function() {
-    showPage("reminders");
-});
-
-element("profileNav").addEventListener("click", function() {
-    showPage("profile");
-});
-
-element("topProfileBtn").addEventListener("click", function() {
-    showPage("profile");
-});
-
-
-/* ==================================
-   ADD REMINDER
-================================== */
-
-element("reminderForm").addEventListener("submit", async function(event) {
-
-    event.preventDefault();
-
-    const button = element("addReminderBtn");
-
-    button.disabled = true;
-    button.textContent = "Saving...";
-
-    try {
-
-        const {
-            data: { user },
-            error: userError
-        } = await supabaseClient.auth.getUser();
-
-        if (userError || !user) {
-            throw new Error("Please sign in again.");
-        }
-
-        const reminderData = {
-            user_id: user.id,
-            customer_name: element("customerName").value.trim(),
-            phone_number: element("phoneNumber").value.trim(),
-            reminder_date: element("reminderDate").value,
-            reminder_time: element("reminderTime").value
-        };
-
-        const { data, error } = await supabaseClient
-            .from("reminders")
-            .insert(reminderData)
-            .select()
-            .single();
-
-        if (error) throw error;
-
-        reminders.push({
-            id: data.id,
-            name: data.customer_name,
-            phone: data.phone_number,
-            date: data.reminder_date,
-            time: data.reminder_time
-        });
-
-        element("reminderForm").reset();
-
-        renderReminders();
-
-        alert("Reminder created successfully!");
-
-    } catch (error) {
-
-        alert("Could not save reminder: " + error.message);
-
-    } finally {
-
-        button.disabled = false;
-        button.textContent = "+ Create Reminder";
-    }
-});
-
-
-/* ==================================
-   LOAD REMINDERS
-================================== */
-
-async function loadReminders() {
-
-    const {
-        data: { user },
-        error: userError
-    } = await supabaseClient.auth.getUser();
-
-    if (userError || !user) {
-        throw new Error("Could not identify signed-in user.");
-    }
-
-    currentUser = user;
-
-    await loadProfile(user);
-
-    const profile = currentProfile;
-
-    let query = supabaseClient
-        .from("reminders")
-        .select("*")
-        .order("reminder_date", { ascending: true })
-        .order("reminder_time", { ascending: true });
-
-    if (profile.role !== "admin") {
-        query = query.eq("user_id", user.id);
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-        throw new Error("Could not load reminders: " + error.message);
-    }
-
-    reminders = data.map(function(r) {
-        return {
-            id: r.id,
-            name: r.customer_name,
-            phone: r.phone_number,
-            date: r.reminder_date,
-            time: r.reminder_time
-        };
-    });
-
-    renderReminders();
-}
-
-
-/* ==================================
-   RENDER REMINDERS
-================================== */
-
-function renderReminders() {
-
-    const list = element("reminderList");
-    const today = getTodayDate();
-
-    element("totalCount").textContent = reminders.length;
-
-    element("todayCount").textContent =
-        reminders.filter(function(r) {
-            return r.date === today;
-        }).length;
-
-    element("upcomingCount").textContent =
-        reminders.filter(function(r) {
-            return r.date >= today;
-        }).length;
-
-    if (reminders.length === 0) {
-
-        list.innerHTML =
-            '<div class="empty">No reminders yet.</div>';
-
-        return;
-    }
-
-    list.innerHTML = "";
-
-    reminders.forEach(function(r) {
-
-        const item = document.createElement("div");
-        item.className = "reminder";
-
-        const details = document.createElement("div");
-
-        const name = document.createElement("strong");
-        name.textContent = r.name;
-
-        const phone = document.createElement("p");
-        phone.textContent = r.phone;
-
-        const date = document.createElement("p");
-        date.textContent = r.date + " • " + r.time;
-
-        details.append(name, phone, date);
-
-        const button = document.createElement("button");
-        button.className = "complete-btn";
-        button.textContent = "Complete";
-
-        button.addEventListener("click", async function() {
-
-            button.disabled = true;
-            button.textContent = "Completing...";
-
-            try {
-
-                const { error } = await supabaseClient
-                    .from("reminders")
-                    .delete()
-                    .eq("id", r.id);
-
-                if (error) throw error;
-
-                reminders = reminders.filter(function(x) {
-                    return x.id !== r.id;
-                });
-
-                renderReminders();
-
-            } catch (error) {
-
-                alert("Could not complete reminder: " + error.message);
-
-                button.disabled = false;
-                button.textContent = "Complete";
-            }
-        });
-
-        item.append(details, button);
-        list.appendChild(item);
-    });
-}
-
+const SUPABASE_URL="https://xitfyrauejgmzluyrhna.supabase.co";
+const SUPABASE_KEY="sb_publishable_VrXtVFozj2SpYtj4sEgxCQ_kjtkIJoT";
+const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{flowType:"pkce",autoRefreshToken:true,persistSession:true,detectSessionInUrl:true}});
+let reminders=[],currentUser=null,currentProfile=null,activityRows=[],activityDays=7,activityChart=null;
+let isOAuthCallback=new URLSearchParams(window.location.search).has("code"),oauthHandled=false;
+function el(id){return document.getElementById(id)}
+function showLoginMessage(msg){el("loginMessage").textContent=msg}
+function showDashboard(){el("loginScreen").style.display="none";el("appLayout").style.display="flex"}
+function showLogin(){el("loginScreen").style.display="flex";el("appLayout").style.display="none"}
+function todayISO(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+function initials(name){return(name||"U").trim().split(/\s+/).slice(0,2).map(x=>x[0].toUpperCase()).join("")||"U"}
+function avatar(name){const s=`<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="100%" height="100%" rx="60" fill="#dceaff"/><text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle" font-family="Arial" font-size="42" font-weight="bold" fill="#287cf5">${initials(name)}</text></svg>`;return "data:image/svg+xml;charset=UTF-8,"+encodeURIComponent(s)}
+function setPhoto(id,url,name){const img=el(id);img.src=url||avatar(name);img.onerror=()=>img.src=avatar(name)}
+
+el("googleLoginBtn").addEventListener("click",async()=>{const b=el("googleLoginBtn");b.disabled=true;b.textContent="Connecting to Google...";showLoginMessage("");try{const{error}=await supabaseClient.auth.signInWithOAuth({provider:"google",options:{redirectTo:window.location.origin}});if(error)throw error}catch(e){showLoginMessage(e.message);b.disabled=false;b.textContent="Continue with Google"}});
+el("loginForm").addEventListener("submit",async e=>{e.preventDefault();const b=el("signInBtn");b.disabled=true;b.textContent="Signing in...";showLoginMessage("");try{const{error}=await supabaseClient.auth.signInWithPassword({email:el("loginEmail").value.trim(),password:el("loginPassword").value});if(error)throw error;const{data}=await supabaseClient.auth.getUser();if(!data.user)throw Error("Could not identify signed-in user.");currentUser=data.user;showDashboard();await loadReminders()}catch(e){showLoginMessage(e.message)}finally{b.disabled=false;b.textContent="Sign In"}});
+supabaseClient.auth.onAuthStateChange((event,session)=>{if(isOAuthCallback&&!oauthHandled&&session&&(event==="SIGNED_IN"||event==="INITIAL_SESSION")){oauthHandled=true;isOAuthCallback=false;setTimeout(async()=>{try{currentUser=session.user;showDashboard();await loadReminders()}catch(e){console.error(e);alert("Dashboard error: "+e.message)}window.history.replaceState({},document.title,window.location.pathname)},0)}});{oauthHandled=true;isOAuthCallback=false;setTimeout(async()=>{try{currentUser=session.user;showDashboard();await loadReminders()}catch(e){console.error(e);alert("Dashboard error: "+e.message)}window.history.replaceState({},document.title,window.location.pathname)},0)}});
+async function loadProfile(user){currentUser=user;const{data:profile,error}=await supabaseClient.from("profiles").select("full_name, role").eq("id",user.id).single();if(error)throw Error("Could not load profile: "+error.message);currentProfile=profile;const m=user.user_metadata||{},name=profile.full_name||m.full_name||m.name||user.email||"Department Member",photo=m.avatar_url||m.picture||"",role=profile.role||"agent";el("topName").textContent=name;el("topRole").textContent=role;el("sidebarName").textContent=name;el("sidebarRole").textContent=role;el("profileName").textContent=name;el("profileEmail").textContent=user.email||"";el("profileRole").textContent=role;el("editFullName").value=name;setPhoto("topPhoto",photo,name);setPhoto("sidebarPhoto",photo,name);setPhoto("profilePhoto",photo,name)}
+el("editProfileBtn").addEventListener("click",()=>{const box=el("profileEdit");box.style.display=box.style.display==="block"?"none":"block";el("profileMessage").textContent=""});
+el("saveProfileBtn").addEventListener("click",async()=>{const b=el("saveProfileBtn"),fullName=el("editFullName").value.trim();if(!fullName){el("profileMessage").textContent="Please enter your name.";return}b.disabled=true;b.textContent="Saving...";try{const{error}=await supabaseClient.from("profiles").update({full_name:fullName}).eq("id",currentUser.id);if(error)throw error;await loadProfile(currentUser);el("profileEdit").style.display="none";el("profileMessage").textContent="Profile updated successfully."}catch(e){el("profileMessage").textContent="Could not update profile: "+e.message}finally{b.disabled=false;b.textContent="Save Changes"}});
+el("signOutBtn").addEventListener("click",async()=>{if(!confirm("Are you sure you want to sign out?"))return;const{error}=await supabaseClient.auth.signOut();if(error){alert("Sign out failed: "+error.message);return}currentUser=null;currentProfile=null;reminders=[];if(activityChart){activityChart.destroy();activityChart=null}showLogin()});
+
+function setActiveNav(id){document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));el(id).classList.add("active")}
+function showPage(page){["dashboardSection","addReminderSection","remindersSection"].forEach(id=>el(id).classList.remove("active"));el("profilePanel").style.display="none";
+if(page==="profile"){el("profilePanel").style.display="block";el("pageTitle").textContent="My Profile";el("pageSubtitle").textContent="Manage your department account.";setActiveNav("profileNav")}
+else{const map={dashboard:"dashboardSection",add:"addReminderSection",reminders:"remindersSection"};el(map[page]).classList.add("active");const titles={dashboard:["Dashboard","Your reminder activity at a glance."],add:["Add Reminder","Create a new customer callback reminder."],reminders:["My Reminders","View your scheduled customer callbacks."]};el("pageTitle").textContent=titles[page][0];el("pageSubtitle").textContent=titles[page][1];setActiveNav(({dashboard:"dashboardNav",add:"addNav",reminders:"remindersNav"})[page])}
+if(page==="dashboard")renderActivityChart()}
+el("dashboardNav").addEventListener("click",()=>showPage("dashboard"));el("addNav").addEventListener("click",()=>showPage("add"));el("remindersNav").addEventListener("click",()=>showPage("reminders"));el("profileNav").addEventListener("click",()=>showPage("profile"));el("topProfileBtn").addEventListener("click",()=>showPage("profile"));
+
+el("reminderForm").addEventListener("submit",async e=>{e.preventDefault();const b=el("addReminderBtn");b.disabled=true;b.textContent="Saving...";try{const{data:{user},error:userError}=await supabaseClient.auth.getUser();if(userError||!user)throw Error("Please sign in again.");const row={user_id:user.id,customer_name:el("customerName").value.trim(),phone_number:el("phoneNumber").value.trim(),reminder_date:el("reminderDate").value,reminder_time:el("reminderTime").value};const{error}=await supabaseClient.from("reminders").insert(row);if(error)throw error;el("reminderForm").reset();await loadReminders();alert("Reminder created successfully!");showPage("reminders")}catch(e){alert("Could not save reminder: "+e.message)}finally{b.disabled=false;b.textContent="+ Create Reminder"}});
+
+async function loadReminders(){const{data:{user},error:userError}=await supabaseClient.auth.getUser();if(userError||!user)throw Error("Could not identify signed-in user.");currentUser=user;await loadProfile(user);let q=supabaseClient.from("reminders").select("*").order("reminder_date",{ascending:true}).order("reminder_time",{ascending:true});if(currentProfile.role!=="admin")q=q.eq("user_id",user.id);const{data,error}=await q;if(error)throw Error("Could not load reminders: "+error.message);const all=data||[];activityRows=all;reminders=all.filter(r=>r.status!=="completed").map(r=>({id:r.id,name:r.customer_name,phone:r.phone_number,date:r.reminder_date,time:r.reminder_time,status:r.status}));renderReminders();await loadActivityRows();renderActivityChart()}
+function renderReminders(){const list=el("reminderList"),today=todayISO();el("totalCount").textContent=reminders.length;el("todayCount").textContent=reminders.filter(r=>r.date===today).length;el("upcomingCount").textContent=reminders.filter(r=>r.date>=today).length;if(!reminders.length){list.innerHTML='<div class="empty">No reminders yet.</div>';return}list.innerHTML="";reminders.forEach(r=>{const item=document.createElement("div");item.className="reminder";const details=document.createElement("div"),name=document.createElement("strong"),phone=document.createElement("p"),date=document.createElement("p");name.textContent=r.name;phone.textContent=r.phone;date.textContent=r.date+" • "+r.time;details.append(name,phone,date);const b=document.createElement("button");b.className="complete-btn";b.textContent="Complete";b.addEventListener("click",async()=>{b.disabled=true;b.textContent="Completing...";try{const{error}=await supabaseClient.from("reminders").update({status:"completed"}).eq("id",r.id);if(error)throw error;await loadReminders()}catch(e){alert("Could not complete reminder: "+e.message);b.disabled=false;b.textContent="Complete"}});item.append(details,b);list.appendChild(item)})}
+
+async function loadActivityRows(){let q=supabaseClient.from("reminders").select("user_id, created_at");if(currentProfile.role!=="admin")q=q.eq("user_id",currentUser.id);const{data,error}=await q;if(error){el("chartMessage").textContent="Could not load activity: "+error.message;return}activityRows=data||[]}
+function dateKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+async function renderActivityChart(){if(!currentUser||!currentProfile)return;const days=activityDays,now=new Date(),labels=[],keys=[];for(let i=days-1;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth(),now.getDate()-i);keys.push(dateKey(d));labels.push(d.toLocaleDateString("en-US",{month:"short",day:"numeric"}))}
+const counts={};const userIds=[...new Set(activityRows.map(r=>r.user_id).filter(Boolean))];let names={};
+if(currentProfile.role==="admin"&&userIds.length){const{data,error}=await supabaseClient.from("profiles").select("id, full_name").in("id",userIds);if(!error)(data||[]).forEach(p=>names[p.id]=p.full_name||"Agent")}
+if(currentProfile.role!=="admin")names[currentUser.id]=currentProfile.full_name||currentUser.email||"My Activity";
+activityRows.forEach(r=>{if(!r.created_at||!r.user_id)return;const d=new Date(r.created_at);const key=dateKey(d);if(!keys.includes(key))return;const person=currentProfile.role==="admin"?(names[r.user_id]||"Agent"):"My Activity";counts[person]=counts[person]||{};counts[person][key]=(counts[person][key]||0)+1});
+const people=Object.keys(counts);const datasets=people.map((person,i)=>({label:person,data:keys.map(k=>counts[person][k]||0),borderColor:["#287cf5","#8b5cf6","#16a36a","#f59e0b","#e45b83","#0891b2"][i%6],backgroundColor:"transparent",borderWidth:3,tension:.38,pointRadius:3,pointHoverRadius:6,fill:false}));
+el("chartMessage").textContent=people.length?"":"No reminder activity found for this period.";const ctx=el("agentActivityChart").getContext("2d");if(activityChart)activityChart.destroy();activityChart=new Chart(ctx,{type:"line",data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},plugins:{legend:{display:people.length>0,position:"bottom",labels:{usePointStyle:true,boxWidth:7,padding:18,font:{family:"Inter",size:11}}},tooltip:{backgroundColor:"#14264a",padding:12,cornerRadius:9}},scales:{x:{grid:{display:false},ticks:{color:"#8493aa",font:{family:"Inter",size:10}}},y:{beginAtZero:true,ticks:{precision:0,color:"#8493aa",font:{family:"Inter",size:10}},grid:{color:"rgba(130,155,190,.14)"}}}}})}
+function setActivityDays(days){activityDays=days;el("last7Days").classList.toggle("active",days===7);el("last30Days").classList.toggle("active",days===30);renderActivityChart()}
+el("last7Days").addEventListener("click",()=>setActivityDays(7));el("last30Days").addEventListener("click",()=>setActivityDays(30));
 </script>
-
 </body>
 </html>
