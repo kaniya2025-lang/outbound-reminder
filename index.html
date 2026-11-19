@@ -152,13 +152,133 @@ function initials(name){return(name||"U").trim().split(/\s+/).slice(0,2).map(x=>
 function avatar(name){const s=`<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="100%" height="100%" rx="60" fill="#dceaff"/><text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle" font-family="Arial" font-size="42" font-weight="bold" fill="#287cf5">${initials(name)}</text></svg>`;return "data:image/svg+xml;charset=UTF-8,"+encodeURIComponent(s)}
 function setPhoto(id,url,name){const img=el(id);img.src=url||avatar(name);img.onerror=()=>img.src=avatar(name)}
 
-el("googleLoginBtn").addEventListener("click",async()=>{const b=el("googleLoginBtn");b.disabled=true;b.textContent="Connecting to Google...";showLoginMessage("");try{const{error}=await supabaseClient.auth.signInWithOAuth({provider:"google",options:{redirectTo:window.location.origin}});if(error)throw error}catch(e){showLoginMessage(e.message);b.disabled=false;b.textContent="Continue with Google"}});
-el("loginForm").addEventListener("submit",async e=>{e.preventDefault();const b=el("signInBtn");b.disabled=true;b.textContent="Signing in...";showLoginMessage("");try{const{error}=await supabaseClient.auth.signInWithPassword({email:el("loginEmail").value.trim(),password:el("loginPassword").value});if(error)throw error;const{data}=await supabaseClient.auth.getUser();if(!data.user)throw Error("Could not identify signed-in user.");currentUser=data.user;showDashboard();await loadReminders()}catch(e){showLoginMessage(e.message)}finally{b.disabled=false;b.textContent="Sign In"}});
-supabaseClient.auth.onAuthStateChange((event,session)=>{if(isOAuthCallback&&!oauthHandled&&session&&(event==="SIGNED_IN"||event==="INITIAL_SESSION")){oauthHandled=true;isOAuthCallback=false;setTimeout(async()=>{try{currentUser=session.user;showDashboard();await loadReminders()}catch(e){console.error(e);alert("Dashboard error: "+e.message)}window.history.replaceState({},document.title,window.location.pathname)},0)}});{oauthHandled=true;isOAuthCallback=false;setTimeout(async()=>{try{currentUser=session.user;showDashboard();await loadReminders()}catch(e){console.error(e);alert("Dashboard error: "+e.message)}window.history.replaceState({},document.title,window.location.pathname)},0)}});
-async function loadProfile(user){currentUser=user;const{data:profile,error}=await supabaseClient.from("profiles").select("full_name, role").eq("id",user.id).single();if(error)throw Error("Could not load profile: "+error.message);currentProfile=profile;const m=user.user_metadata||{},name=profile.full_name||m.full_name||m.name||user.email||"Department Member",photo=m.avatar_url||m.picture||"",role=profile.role||"agent";el("topName").textContent=name;el("topRole").textContent=role;el("sidebarName").textContent=name;el("sidebarRole").textContent=role;el("profileName").textContent=name;el("profileEmail").textContent=user.email||"";el("profileRole").textContent=role;el("editFullName").value=name;setPhoto("topPhoto",photo,name);setPhoto("sidebarPhoto",photo,name);setPhoto("profilePhoto",photo,name)}
-el("editProfileBtn").addEventListener("click",()=>{const box=el("profileEdit");box.style.display=box.style.display==="block"?"none":"block";el("profileMessage").textContent=""});
-el("saveProfileBtn").addEventListener("click",async()=>{const b=el("saveProfileBtn"),fullName=el("editFullName").value.trim();if(!fullName){el("profileMessage").textContent="Please enter your name.";return}b.disabled=true;b.textContent="Saving...";try{const{error}=await supabaseClient.from("profiles").update({full_name:fullName}).eq("id",currentUser.id);if(error)throw error;await loadProfile(currentUser);el("profileEdit").style.display="none";el("profileMessage").textContent="Profile updated successfully."}catch(e){el("profileMessage").textContent="Could not update profile: "+e.message}finally{b.disabled=false;b.textContent="Save Changes"}});
-el("signOutBtn").addEventListener("click",async()=>{if(!confirm("Are you sure you want to sign out?"))return;const{error}=await supabaseClient.auth.signOut();if(error){alert("Sign out failed: "+error.message);return}currentUser=null;currentProfile=null;reminders=[];if(activityChart){activityChart.destroy();activityChart=null}showLogin()});
+
+el("googleLoginBtn").addEventListener("click", async () => {
+    const b = el("googleLoginBtn");
+    b.disabled = true;
+    b.textContent = "Connecting to Google...";
+    showLoginMessage("");
+
+    try {
+        const { error } = await supabaseClient.auth.signInWithOAuth({
+            provider: "google",
+            options: {
+                redirectTo: window.location.origin
+            }
+        });
+
+        if (error) throw error;
+
+    } catch (e) {
+        showLoginMessage(e.message);
+        b.disabled = false;
+        b.textContent = "Continue with Google";
+    }
+});
+
+el("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const b = el("signInBtn");
+    b.disabled = true;
+    b.textContent = "Signing in...";
+    showLoginMessage("");
+
+    try {
+        const { error } = await supabaseClient.auth.signInWithPassword({
+            email: el("loginEmail").value.trim(),
+            password: el("loginPassword").value
+        });
+
+        if (error) throw error;
+
+        const { data } = await supabaseClient.auth.getUser();
+
+        if (!data.user) {
+            throw Error("Could not identify signed-in user.");
+        }
+
+        currentUser = data.user;
+        showDashboard();
+        await loadReminders();
+
+    } catch (e) {
+        showLoginMessage(e.message);
+
+    } finally {
+        b.disabled = false;
+        b.textContent = "Sign In";
+    }
+});
+
+supabaseClient.auth.onAuthStateChange((event,session)=>{if(isOAuthCallback&&!oauthHandled&&session&&(event==="SIGNED_IN"||event==="INITIAL_SESSION")){oauthHandled=true;isOAuthCallback=false;setTimeout(async()=>{try{currentUser=session.user;showDashboard();await loadReminders()}catch(e){console.error(e);alert("Dashboard error: "+e.message)}window.history.replaceState({},document.title,window.location.pathname)},0)}});
+
+el("editProfileBtn").addEventListener("click", () => {
+    const box = el("profileEdit");
+
+    box.style.display =
+        box.style.display === "block" ? "none" : "block";
+
+    el("profileMessage").textContent = "";
+});
+
+el("saveProfileBtn").addEventListener("click", async () => {
+    const b = el("saveProfileBtn");
+    const fullName = el("editFullName").value.trim();
+
+    if (!fullName) {
+        el("profileMessage").textContent = "Please enter your name.";
+        return;
+    }
+
+    b.disabled = true;
+    b.textContent = "Saving...";
+
+    try {
+        const { error } = await supabaseClient
+            .from("profiles")
+            .update({ full_name: fullName })
+            .eq("id", currentUser.id);
+
+        if (error) throw error;
+
+        await loadProfile(currentUser);
+
+        el("profileEdit").style.display = "none";
+        el("profileMessage").textContent =
+            "Profile updated successfully.";
+
+    } catch (e) {
+        el("profileMessage").textContent =
+            "Could not update profile: " + e.message;
+
+    } finally {
+        b.disabled = false;
+        b.textContent = "Save Changes";
+    }
+});
+
+el("signOutBtn").addEventListener("click", async () => {
+    if (!confirm("Are you sure you want to sign out?")) return;
+
+    const { error } = await supabaseClient.auth.signOut();
+
+    if (error) {
+        alert("Sign out failed: " + error.message);
+        return;
+    }
+
+    currentUser = null;
+    currentProfile = null;
+    reminders = [];
+
+    if (activityChart) {
+        activityChart.destroy();
+        activityChart = null;
+    }
+
+    showLogin();
+});
 
 function setActiveNav(id){document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));el(id).classList.add("active")}
 function showPage(page){["dashboardSection","addReminderSection","remindersSection"].forEach(id=>el(id).classList.remove("active"));el("profilePanel").style.display="none";
